@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="50%" stop-color="#047857" />
+      <stop offset="100%" stop-color="#064e3b" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+    <linearGradient id="plateGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f1f5f9" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle with safe padding -->
+  <rect width="512" height="512" rx="110" fill="url(#bgGrad)" />
+
+  <!-- Outer Indian Thali / Plate rim with subtle glow -->
+  <circle cx="256" cy="256" r="190" fill="none" stroke="url(#goldGrad)" stroke-width="8" opacity="0.85" />
+  
+  <!-- Main Plate -->
+  <circle cx="256" cy="256" r="176" fill="url(#plateGrad)" filter="url(#dropShadow)" />
+  <circle cx="256" cy="256" r="162" fill="none" stroke="#e2e8f0" stroke-width="2" />
+
+  <!-- Katori / Indian Bowl 1: Turmeric Golden Curry / Dal -->
+  <circle cx="210" cy="190" r="54" fill="#fef3c7" stroke="#f59e0b" stroke-width="4" />
+  <circle cx="210" cy="190" r="44" fill="#f59e0b" />
+  <!-- Cilantro / Coriander Garnish -->
+  <path d="M204 184 C202 178, 208 174, 214 176 C218 172, 222 176, 220 182 C226 186, 220 192, 214 190 Z" fill="#10b981" />
+
+  <!-- Katori / Bowl 2: Palak / Green Healthy Saag -->
+  <circle cx="305" cy="205" r="48" fill="#d1fae5" stroke="#10b981" stroke-width="4" />
+  <circle cx="305" cy="205" r="40" fill="#059669" />
+  <!-- Paneer cube in palak -->
+  <rect x="298" y="198" width="14" height="14" rx="2" fill="#ffffff" />
+
+  <!-- Bowl 3 / Center: Healthy Steamed Rice / Khichdi / Roti -->
+  <circle cx="230" cy="305" r="56" fill="#fffbeb" stroke="#d97706" stroke-width="4" />
+  <circle cx="230" cy="305" r="46" fill="#fef9c3" />
+  <circle cx="226" cy="300" r="4" fill="#b45309" />
+  <circle cx="236" cy="308" r="3" fill="#b45309" />
+  <circle cx="218" cy="310" r="3.5" fill="#b45309" />
+
+  <!-- Fresh Basil / Mint / Curry Leaf Branch -->
+  <path d="M285 285 Q335 285 345 335 Q305 345 285 285 Z" fill="#22c55e" />
+  <path d="M285 285 Q325 315 345 335" stroke="#15803d" stroke-width="2" fill="none" />
+  <path d="M305 300 Q335 295 350 280 Q345 310 305 300 Z" fill="#16a34a" />
+
+  <!-- Warm healthy steam swirls above the bowl -->
+  <path d="M245 105 Q255 120 245 135 Q235 150 245 165" fill="none" stroke="url(#goldGrad)" stroke-width="4" stroke-linecap="round" opacity="0.9" />
+  <path d="M265 95 Q275 115 265 130 Q255 145 265 160" fill="none" stroke="#fef08a" stroke-width="3.5" stroke-linecap="round" opacity="0.75" />
+</svg>
