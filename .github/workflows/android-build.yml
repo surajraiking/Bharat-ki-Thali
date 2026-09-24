@@ -32,6 +32,17 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      - name: Prepare branded PWA and Android icon assets
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin
+          mkdir -p resources
+          rsvg-convert -w 512 -h 512 public/icon.svg -o public/pwa-512x512.png
+          rsvg-convert -w 192 -h 192 public/icon.svg -o public/pwa-192x192.png
+          rsvg-convert -w 512 -h 512 public/icon.svg -o public/pwa-maskable-512x512.png
+          rsvg-convert -w 180 -h 180 public/icon.svg -o public/apple-touch-icon.png
+          rsvg-convert -w 1024 -h 1024 public/icon.svg -o resources/icon.png
+
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
@@ -43,6 +54,9 @@ jobs:
 
       - name: Add Android platform
         run: npx cap add android
+
+      - name: Generate native Android branding
+        run: npx @capacitor/assets generate --android --iconBackgroundColor '#173B2F' --iconBackgroundColorDark '#0F2A22'
 
       - name: Sync Capacitor
         run: npx cap sync android
