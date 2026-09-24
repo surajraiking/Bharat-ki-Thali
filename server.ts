@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
+import { allDishes } from './src/data/dishes';
 
 dotenv.config();
 
@@ -34,6 +35,45 @@ app.get(['/bharat-ki-thali.apk', '/api/download/apk'], (_req, res) => {
   }
 });
 
+// Lightweight, catalog-grounded search used by AI Chef and future clients.
+const normalize = (value: unknown) => String(value ?? '').toLowerCase().trim();
+const dishSearchText = (dish: typeof allDishes[number]) => [
+  dish.id, dish.name, dish.nameHindi, dish.description, dish.descriptionHindi,
+  dish.region, dish.state, ...dish.cuisine, ...dish.category, ...dish.mealTypes,
+  ...dish.diet, ...dish.tags, ...(dish.festival || []),
+  ...dish.ingredients.map(i => i.name)
+].map(normalize).join(' ');
+
+const searchCatalog = (query: string, limit = 8) => {
+  const terms = normalize(query).split(/\\s+/).filter(Boolean);
+  if (!terms.length) return allDishes.slice(0, limit);
+  return allDishes
+    .map(dish => {
+      const haystack = dishSearchText(dish);
+      const exact = haystack.includes(normalize(query)) ? 5 : 0;
+      const score = exact + terms.reduce((total, term) => total + (haystack.includes(term) ? 1 : 0), 0);
+      return { dish, score };
+    })
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score || (b.dish.popularity || 0) - (a.dish.popularity || 0))
+    .slice(0, limit)
+    .map(item => item.dish);
+};
+
+app.get('/api/recipes/search', (req, res) => {
+  const query = typeof req.query.q === 'string' ? req.query.q : '';
+  const limitRaw = Number(req.query.limit ?? 12);
+  const limit = Number.isFinite(limitRaw) ? Math.min(Math.max(Math.floor(limitRaw), 1), 30) : 12;
+  const results = searchCatalog(query, limit).map(dish => ({
+    id: dish.id, name: dish.name, nameHindi: dish.nameHindi, image: dish.image,
+    region: dish.region, state: dish.state, cuisine: dish.cuisine,
+    category: dish.category, mealTypes: dish.mealTypes, diet: dish.diet,
+    totalTimeMinutes: dish.totalTimeMinutes, difficulty: dish.difficulty,
+    tags: dish.tags, popularity: dish.popularity
+  }));
+  res.json({ query, count: results.length, results });
+});
+
 // AI Chef Chat endpoint
 app.post('/api/ai/chat', async (req, res) => {
   const { message, history } = req.body;
@@ -42,19 +82,28 @@ app.post('/api/ai/chat', async (req, res) => {
     return res.status(400).json({ error: 'Message is required' });
   }
 
-  // System instruction for the Indian culinary expert
-  const systemInstruction = `You are "AI Chef" inside Bharat Ki Thali 2.0 (भारत की थाली), a master expert on Indian regional cuisine, traditional recipes, authentic spices, and ayurvedic food wisdom.
-Tone: Warm, encouraging, hospitable, knowledgeable, speaks fluent Hindi and English (natural Hinglish or pure Hindi/English depending on user).
-Capabilities:
-- Recommend dishes based on mood, time, weather, or dietary restrictions (weight loss, high protein, diabetic friendly, satvik, jain).
-- Suggest dishes from user's leftover or available fridge ingredients.
-- Explain cooking secrets, tempering (chhaunk/tadka) techniques, and ingredient substitutions (e.g., jaggery for sugar, sattu for protein, ragi for gluten-free).
-- Recommend thali combinations and festival sweets.
+  const catalogMatches = searchCatalog(message, 10);
+  const catalogContext = catalogMatches.map(dish => ({
+    id: dish.id, name: dish.name, nameHindi: dish.nameHindi, description: dish.description,
+    region: dish.region, state: dish.state, cuisine: dish.cuisine, category: dish.category,
+    mealTypes: dish.mealTypes, diet: dish.diet, ingredients: dish.ingredients,
+    totalTimeMinutes: dish.totalTimeMinutes, servings: dish.servings,
+    difficulty: dish.difficulty, spiceLevel: dish.spiceLevel, nutrition: dish.nutrition,
+    tags: dish.tags, festival: dish.festival
+  }));
 
-When relevant, mention exact matching dishes from our catalog:
-[Kanda Batata Poha, Moong Dal Chilla, Steamed Idli, Crispy Dosa, Upma, Methi Thepla, Besan Chilla, Khaman Dhokla, Palak Dal, Tadka Dal, Sambar, Rasam, Rajma Masala, Punjabi Chole, Kadhi Pakora, Dal Makhani, Palak Paneer, Paneer Bhurji, Baingan Bharta, Aloo Gobi, Surti Undhiyu, Bhindi Masala, Kashmiri Dum Aloo, Khichdi, Bajra Roti, Jowar Roti, Veg Pulao, Makhana Chaat, Sprouts Chaat, Gajar Halwa, Besan Laddu, Kheer, Masala Chaas, Cucumber Raita, Sattu Sharbat, Aam Panna, Litti Chokha, Dal Baati Churma, Misal Pav, Khandvi, Curd Rice, Avial, Bisi Bele Bath, Steamed Momos, Spongy Rosogolla, Mumbai Vada Pav, Amritsari Kulcha, Chettinad Chicken, Rogan Josh, Veg Dum Biryani].
+  // System instruction is grounded in the real recipe catalog instead of a hand-maintained list.
+  const systemInstruction = `You are "AI Chef" inside Bharat Ki Thali 2.0 (भारत की थाली), a helpful Indian culinary assistant.
+Tone: warm, practical, knowledgeable; respond naturally in Hindi, English or Hinglish.
+Important rules:
+- Use the supplied catalog context whenever recommending dishes or discussing exact recipe facts.
+- Never invent recipe IDs, catalog dishes, ingredient quantities, nutrition values, or preparation times.
+- If the catalog does not contain a requested dish, clearly say it is not in the current catalog and then provide general cooking guidance without pretending it is catalog data.
+- Nutrition values are estimates from the catalog, not medical advice. Do not diagnose conditions or promise health outcomes.
+- For dietary/medical questions, give general food information and suggest consulting a qualified professional for individualized advice.
+- Return concise, useful answers. When recommending catalog dishes, end with a JSON line exactly in this shape: {\"recommendedDishes\":[\"id1\",\"id2\"]}. Only include IDs present in the catalog context.
 
-Format response cleanly with appetizing descriptions, bullet points for steps or ingredients, and practical tips.`;
+CATALOG CONTEXT:\n${JSON.stringify(catalogContext)}`;
 
   // Fallback engine if Gemini API key is missing or call fails
   const getSmartFallback = (query: string) => {
