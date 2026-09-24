@@ -83,33 +83,35 @@ app.post('/api/ai/chat', async (req, res) => {
   }
 
   const catalogMatches = searchCatalog(message, 10);
-  const catalogContext = catalogMatches.map(dish => ({
-    id: dish.id, name: dish.name, nameHindi: dish.nameHindi, description: dish.description,
-    region: dish.region, state: dish.state, cuisine: dish.cuisine, category: dish.category,
-    mealTypes: dish.mealTypes, diet: dish.diet, ingredients: dish.ingredients,
-    totalTimeMinutes: dish.totalTimeMinutes, servings: dish.servings,
-    difficulty: dish.difficulty, spiceLevel: dish.spiceLevel, nutrition: dish.nutrition,
-    tags: dish.tags, festival: dish.festival
-  }));
-
-  // Strict catalog grounding: the assistant must stay on the user's food question.
+  const queryNorm = normalize(message);
   const foodIntentWords = [
     'recipe','dish','food','cook','cooking','ingredient','ingredients','eat','meal','breakfast','lunch','dinner',
     'snack','dessert','sweet','thali','roti','sabzi','dal','rice','chawal','paneer','vegetable','veg','nonveg',
-    'protein','calorie','nutrition','spicy','sweet','healthy','diet','festival','regional','state','cuisine',
+    'protein','calorie','nutrition','spicy','healthy','diet','festival','regional','state','cuisine',
     'नाश्ता','खाना','बनाना','रेसिपी','सामग्री','दाल','सब्जी','रोटी','चावल','थाली','मिठाई','पेय','पनीर','डिनर','लंच'
   ];
-  const queryNorm = normalize(message);
   const hasFoodIntent = foodIntentWords.some(word => queryNorm.includes(normalize(word)));
-  const exactCatalogMatches = searchCatalog(message, 10);
 
   const catalogContext = catalogMatches.map(dish => ({
-    id: dish.id, name: dish.name, nameHindi: dish.nameHindi, description: dish.description,
-    region: dish.region, state: dish.state, cuisine: dish.cuisine, category: dish.category,
-    mealTypes: dish.mealTypes, diet: dish.diet, ingredients: dish.ingredients,
-    steps: dish.steps, totalTimeMinutes: dish.totalTimeMinutes, servings: dish.servings,
-    difficulty: dish.difficulty, spiceLevel: dish.spiceLevel, nutrition: dish.nutrition,
-    tags: dish.tags, festival: dish.festival
+    id: dish.id,
+    name: dish.name,
+    nameHindi: dish.nameHindi,
+    description: dish.description,
+    region: dish.region,
+    state: dish.state,
+    cuisine: dish.cuisine,
+    category: dish.category,
+    mealTypes: dish.mealTypes,
+    diet: dish.diet,
+    ingredients: dish.ingredients,
+    steps: dish.steps,
+    totalTimeMinutes: dish.totalTimeMinutes,
+    servings: dish.servings,
+    difficulty: dish.difficulty,
+    spiceLevel: dish.spiceLevel,
+    nutrition: dish.nutrition,
+    tags: dish.tags,
+    festival: dish.festival
   }));
 
   const scopeResponse = {
@@ -117,30 +119,29 @@ app.post('/api/ai/chat', async (req, res) => {
     recommendedDishes: []
   };
 
-  // Do not send obviously unrelated questions to Gemini. This prevents irrelevant filler answers.
-  if (!hasFoodIntent && exactCatalogMatches.length === 0) {
+  // Reject unrelated prompts before they reach the model.
+  if (!hasFoodIntent && catalogMatches.length === 0) {
     return res.json({ ...scopeResponse, source: 'scope-guard' });
   }
 
   const systemInstruction = `You are the AI Chef inside Bharat Ki Thali 2.0.
-Your ONLY job is to answer the user's CURRENT food/cooking question. Never change the topic.
-Rules:
-- Answer only what the user asked; do not add unrelated suggestions, generic lists, or health lectures.
-- Use the supplied catalog for recipe facts. Never invent catalog IDs, ingredients, quantities, nutrition, timings, or steps.
-- If the user asks about a catalog dish, answer specifically about that dish.
-- If the user names ingredients, focus on recipes that actually contain those ingredients or explain a directly relevant cooking method.
-- If the user asks for a category/slot (roti, sabzi, dal, rice, sweet, drink), only recommend items from that category.
-- If the requested dish is not in the catalog, clearly say it is not currently in the catalog and provide only general cooking guidance if that directly answers the question.
-- Do not diagnose disease or promise health outcomes. Nutrition figures are catalog estimates.
-- Match the user's language (Hindi/Hinglish/English).
-- Keep the answer concise but complete.
-- When recommending catalog dishes, end with one JSON line exactly: {"recommendedDishes":["id1","id2"]}. Only use IDs present in CATALOG CONTEXT.
-- If no recommendation is needed, do not output the JSON line.
+Your ONLY job is to answer the user's CURRENT food/cooking question.
+- Answer only the asked question. Never add unrelated recommendations or filler.
+- Use CATALOG CONTEXT for exact recipe facts. Never invent IDs, quantities, nutrition, timings, ingredients, or steps.
+- If the user names a dish, answer specifically about that dish.
+- If the user names ingredients, focus only on dishes/cooking methods relevant to those ingredients.
+- If the user asks for a thali slot/category such as roti, sabzi, dal, rice, sweet or drink, recommend only matching catalog items.
+- If the requested dish is absent from the catalog, say so clearly; do not pretend it exists.
+- Nutrition values are estimates and are not medical advice.
+- Do not diagnose conditions or promise health outcomes.
+- Match Hindi/Hinglish/English used by the user.
+- Keep the response focused and useful.
+- When recommending catalog dishes, finish with JSON: {"recommendedDishes":["id1","id2"]}. Only use IDs in CATALOG CONTEXT.
+- If no recommendations are needed, omit that JSON line.
 
 CATALOG CONTEXT:
 ${JSON.stringify(catalogContext)}`;
 
-  // Preserve the user's recent conversation so follow-up questions remain on-topic.
   const recentHistory = Array.isArray(history)
     ? history.slice(-6).map((item: any) => ({
         role: item?.sender === 'user' ? 'user' : 'assistant',
@@ -148,8 +149,20 @@ ${JSON.stringify(catalogContext)}`;
       }))
     : [];
 
+  const getSmartFallback = (query: string) => {
+    const matches = searchCatalog(query, 4);
+    if (matches.length) {
+      return {
+        text: `आपके सवाल के अनुसार संबंधित व्यंजन: ${matches.map(d => d.name).join(', ')}। आप इनमें से किसी dish की विधि, सामग्री, समय या nutrition details पूछ सकते हैं।`,
+        recommendedDishes: matches.map(d => d.id)
+      };
+    }
+    return {
+      text: `“${query}” के लिए वर्तमान recipe catalog में सीधा match नहीं मिला। किसी dish, ingredient, cooking step या Indian food category के बारे में specific सवाल पूछें।`,
+      recommendedDishes: []
+    };
+  };
 
-  // If Gemini API is available, invoke model
   if (aiClient && process.env.GEMINI_API_KEY) {
     try {
       const response = await aiClient.models.generateContent({
@@ -172,95 +185,21 @@ ${JSON.stringify(catalogContext)}`;
           recommendedDishes = Array.isArray(parsed.recommendedDishes)
             ? parsed.recommendedDishes.filter((id: unknown) => catalogMatches.some(d => d.id === id))
             : [];
-        } catch {}
+        } catch {
+          recommendedDishes = [];
+        }
       }
-      const cleanText = replyText.replace(/\n?\{\s*"recommendedDishes"\s*:\s*\[.*?\]\s*\}\s*$/s, '').trim();
+
+      const cleanText = replyText
+        .replace(/\n?\{\s*"recommendedDishes"\s*:\s*\[.*?\]\s*\}\s*$/s, '')
+        .trim();
+
       return res.json({ text: cleanText, recommendedDishes, source: 'gemini' });
     } catch (err: any) {
-      console.warn('Gemini API call failed, falling back to local expert engine:', err?.message || err);
-      const fallback = getSmartFallback(message);
-      return res.json({
-        text: fallback.text,
-        recommendedDishes: fallback.recommendedDishes,
-        source: 'fallback'
-      });
+      console.warn('Gemini API call failed, using focused catalog fallback:', err?.message || err);
     }
   }
 
-  // Fallback response when no key
-  const fallback = getSmartFallback(message);
-  return res.json({
-    text: fallback.text,
-    recommendedDishes: fallback.recommendedDishes,
-    source: 'fallback'
-  });
-});
-
-// Vite Middleware for development & static serving for production
-async function startServer() {
-  if (!isProduction) {
-    const { createServer: createViteServer } = await import('vite');
-    const vite = await createViteServer({
-      server: { middlewareMode: true, hmr: false },
-      appType: 'spa'
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.resolve(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
-  }
-
-  app.listen(Number(PORT), '0.0.0.0', () => {
-    console.log(`Server running at http://0.0.0.0:${PORT}`);
-  });
-}
-
-startServer();  // Deterministic fallback: never inject unrelated dishes.
-  const getSmartFallback = (query: string) => {
-    const matches = searchCatalog(query, 4);
-    if (matches.length) {
-      return {
-        text: `आपके सवाल के हिसाब से मुझे ये संबंधित व्यंजन मिले: ${matches.map(d => d.name).join(', ')}। इनमें से किसी एक की पूरी विधि, सामग्री या nutrition details पूछ सकते हैं।`,
-        recommendedDishes: matches.map(d => d.id)
-      };
-    }
-    return {
-      text: `“${query}” के लिए हमारे वर्तमान recipe catalog में सीधा match नहीं मिला। अगर आप किसी dish, ingredient, recipe, cooking step, thali category या Indian cuisine के बारे में पूछ रहे हैं, तो सवाल थोड़ा specific लिखें।`,
-      recommendedDishes: []
-    };
-  };
-
-
-  // If Gemini API is available, invoke model
-  if (aiClient && process.env.GEMINI_API_KEY) {
-    try {
-      const response = await aiClient.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: [
-          { role: 'user', parts: [{ text: `${systemInstruction}\n\nUser Question: ${message}` }] }
-        ]
-      });
-
-      const replyText = response.text || '';
-      return res.json({
-        text: replyText,
-        source: 'gemini'
-      });
-    } catch (err: any) {
-      console.warn('Gemini API call failed, falling back to local expert engine:', err?.message || err);
-      const fallback = getSmartFallback(message);
-      return res.json({
-        text: fallback.text,
-        recommendedDishes: fallback.recommendedDishes,
-        source: 'fallback'
-      });
-    }
-  }
-
-  // Fallback response when no key
   const fallback = getSmartFallback(message);
   return res.json({
     text: fallback.text,
