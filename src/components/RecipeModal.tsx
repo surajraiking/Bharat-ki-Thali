@@ -29,6 +29,7 @@ export const RecipeModal: React.FC = () => {
     showToast,
     settings,
     collections,
+    navigate,
     toggleDishInCollection
   } = useApp();
 
@@ -103,7 +104,7 @@ export const RecipeModal: React.FC = () => {
             <Heart className={`w-4 h-4 ${favorited ? 'fill-current' : ''}`} />
           </button>
           <button
-            onClick={() => setSelectedDish(null)}
+            onClick={() => navigate('/explore')}
             className="p-2.5 rounded-full bg-black/50 text-white hover:bg-black/70 shadow-md backdrop-blur-md transition-all"
             title="Close"
           >
