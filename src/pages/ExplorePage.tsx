@@ -149,6 +149,34 @@ export const ExplorePage: React.FC = () => {
         </div>
       </div>
 
+      {/* Canonical food categories */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+            {isHindi ? 'खाने की श्रेणियां' : 'Browse by food category'}
+          </h2>
+          <span className="text-[11px] text-stone-400">{dishes.length} recipes</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+          {categoryOptions.filter(c => c !== 'All').map(category => {
+            const count = dishes.filter(d => getPrimaryFoodCategory(d) === category).length;
+            const active = filters.category === category;
+            return (
+              <button
+                key={category}
+                onClick={() => setFilters(prev => ({ ...prev, category: active ? 'All' : category }))}
+                className={`rounded-xl border px-3 py-2.5 text-left transition-all ${active
+                  ? 'border-[#E8620C] bg-[#E8620C] text-white shadow-sm'
+                  : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-[#251D16] text-stone-700 dark:text-stone-300 hover:border-[#E8620C]'}`}
+              >
+                <span className="block text-[11px] font-bold leading-tight">{category}</span>
+                <span className={`text-[10px] ${active ? 'text-white/80' : 'text-stone-400'}`}>{count} items</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Filter Control Panels */}
       <div className="bg-white dark:bg-[#251D16] border border-stone-200/80 dark:border-stone-800 rounded-3xl p-4 sm:p-6 mb-8 shadow-xs">
         
