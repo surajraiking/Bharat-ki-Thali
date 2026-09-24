@@ -13,6 +13,7 @@ import {
 import { useApp } from '../context/AppContext';
 import { RecipeCard } from '../components/RecipeCard';
 import { MealType, DietType, DifficultyType, SortOption } from '../types';
+import { getPrimaryFoodCategory } from '../services/foodTaxonomy';
 
 export const ExplorePage: React.FC = () => {
   const { dishes, filters, setFilters, resetFilters, settings } = useApp();
@@ -38,7 +39,7 @@ export const ExplorePage: React.FC = () => {
   const healthOptions = ['All', 'High Protein', 'Weight Loss', 'Diabetic Friendly', 'Gut Friendly', 'Less Oil'];
   const stateOptions = useMemo(() => ['All', ...Array.from(new Set(dishes.map(d => d.state).filter(Boolean))).sort()], [dishes]);
   const festivalOptions = useMemo(() => ['All', ...Array.from(new Set(dishes.flatMap(d => d.festival || []))).sort()], [dishes]);
-  const categoryOptions = useMemo(() => ['All', ...Array.from(new Set(dishes.flatMap(d => d.category || []))).sort()], [dishes]);
+  const categoryOptions = useMemo(() => ['All', ...Array.from(new Set(dishes.map(getPrimaryFoodCategory))).sort()], [dishes]);
 
   // Filtered & Sorted Dishes
   const filteredDishes = useMemo(() => {
@@ -97,7 +98,7 @@ export const ExplorePage: React.FC = () => {
       }
 
       // Category check
-      if (filters.category !== 'All' && !dish.category.includes(filters.category)) {
+      if (filters.category !== 'All' && getPrimaryFoodCategory(dish) !== filters.category) {
         return false;
       }
 
