@@ -45,7 +45,7 @@ const dishSearchText = (dish: typeof allDishes[number]) => [
 ].map(normalize).join(' ');
 
 const searchCatalog = (query: string, limit = 8) => {
-  const terms = normalize(query).split(/\\s+/).filter(Boolean);
+  const terms = normalize(query).split(/\s+/).filter(Boolean);
   if (!terms.length) return allDishes.slice(0, limit);
   return allDishes
     .map(dish => {
