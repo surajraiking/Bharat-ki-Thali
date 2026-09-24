@@ -133,6 +133,11 @@ export const HomePage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           
           <div className="max-w-3xl mx-auto text-center mb-8">
+            <img
+              src="/brand-logo.svg"
+              alt="Bharat Ki Thali — Created by Suraj Rai"
+              className="w-full max-w-[520px] h-auto mx-auto mb-5 drop-shadow-sm"
+            />
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E8620C]/10 border border-[#E8620C]/25 text-[#E8620C] text-xs font-bold mb-4 tracking-wide">
               <span>🇮🇳</span>
               <span>{isHindi ? 'भारत का प्रीमियम रेसिपी एवं थाली प्लैटफ़ॉर्म' : 'Indias Authentic Recipe Platform'}</span>
