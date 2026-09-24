@@ -71,7 +71,7 @@ export const Navbar: React.FC = () => {
                 <span className="font-heading font-extrabold text-xl sm:text-2xl text-[#24180E] dark:text-[#FDF8F3] tracking-tight">
                   भारत की थाली
                 </span>
-                <span className="hidden xl:inline text-[9px] font-bold tracking-widest text-[#C9973E]">SURAj RAI</span>
+                <span className="hidden xl:inline text-[9px] font-bold tracking-widest text-[#C9973E]">SURAJ RAI</span>
                 <span className="px-1.5 py-0.5 text-[10px] font-bold tracking-wider uppercase bg-[#E8620C]/15 text-[#E8620C] dark:bg-[#E8620C]/30 rounded-md">
                   2.0
                 </span>
