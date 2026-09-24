@@ -15,6 +15,7 @@ import { RecipeModal } from './components/RecipeModal';
 import { CookingModeModal } from './components/CookingModeModal';
 import { ApkDownloadModal } from './components/ApkDownloadModal';
 import { SurpriseMeModal } from './components/SurpriseMeModal';
+import { CreatorCredit } from './components/CreatorCredit';
 
 const AppContent: React.FC = () => {
   const { activePage, toastMessage } = useApp();
@@ -36,6 +37,9 @@ const AppContent: React.FC = () => {
         {activePage === 'favorites' && <FavoritesPage />}
         {activePage === 'settings' && <SettingsPage />}
       </main>
+
+      {/* Creator credit is intentionally global so every app screen carries the creator identity. */}
+      <CreatorCredit />
 
       {/* Mobile Bottom Navigation */}
       <BottomNav />
