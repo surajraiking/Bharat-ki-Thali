@@ -92,49 +92,147 @@ app.post('/api/ai/chat', async (req, res) => {
     tags: dish.tags, festival: dish.festival
   }));
 
-  // System instruction is grounded in the real recipe catalog instead of a hand-maintained list.
-  const systemInstruction = `You are "AI Chef" inside Bharat Ki Thali 2.0 (भारत की थाली), a helpful Indian culinary assistant.
-Tone: warm, practical, knowledgeable; respond naturally in Hindi, English or Hinglish.
-Important rules:
-- Use the supplied catalog context whenever recommending dishes or discussing exact recipe facts.
-- Never invent recipe IDs, catalog dishes, ingredient quantities, nutrition values, or preparation times.
-- If the catalog does not contain a requested dish, clearly say it is not in the current catalog and then provide general cooking guidance without pretending it is catalog data.
-- Nutrition values are estimates from the catalog, not medical advice. Do not diagnose conditions or promise health outcomes.
-- For dietary/medical questions, give general food information and suggest consulting a qualified professional for individualized advice.
-- Return concise, useful answers. When recommending catalog dishes, end with a JSON line exactly in this shape: {\"recommendedDishes\":[\"id1\",\"id2\"]}. Only include IDs present in the catalog context.
+  // Strict catalog grounding: the assistant must stay on the user's food question.
+  const foodIntentWords = [
+    'recipe','dish','food','cook','cooking','ingredient','ingredients','eat','meal','breakfast','lunch','dinner',
+    'snack','dessert','sweet','thali','roti','sabzi','dal','rice','chawal','paneer','vegetable','veg','nonveg',
+    'protein','calorie','nutrition','spicy','sweet','healthy','diet','festival','regional','state','cuisine',
+    'नाश्ता','खाना','बनाना','रेसिपी','सामग्री','दाल','सब्जी','रोटी','चावल','थाली','मिठाई','पेय','पनीर','डिनर','लंच'
+  ];
+  const queryNorm = normalize(message);
+  const hasFoodIntent = foodIntentWords.some(word => queryNorm.includes(normalize(word)));
+  const exactCatalogMatches = searchCatalog(message, 10);
 
-CATALOG CONTEXT:\n${JSON.stringify(catalogContext)}`;
+  const catalogContext = catalogMatches.map(dish => ({
+    id: dish.id, name: dish.name, nameHindi: dish.nameHindi, description: dish.description,
+    region: dish.region, state: dish.state, cuisine: dish.cuisine, category: dish.category,
+    mealTypes: dish.mealTypes, diet: dish.diet, ingredients: dish.ingredients,
+    steps: dish.steps, totalTimeMinutes: dish.totalTimeMinutes, servings: dish.servings,
+    difficulty: dish.difficulty, spiceLevel: dish.spiceLevel, nutrition: dish.nutrition,
+    tags: dish.tags, festival: dish.festival
+  }));
 
-  // Fallback engine if Gemini API key is missing or call fails
+  const scopeResponse = {
+    text: 'मैं केवल Bharat Ki Thali के भारतीय भोजन, रेसिपी, सामग्री, थाली, खाना पकाने और उससे जुड़े पोषण/कुकिंग सवालों में मदद करता हूँ। अपना food-related सवाल लिखें।',
+    recommendedDishes: []
+  };
+
+  // Do not send obviously unrelated questions to Gemini. This prevents irrelevant filler answers.
+  if (!hasFoodIntent && exactCatalogMatches.length === 0) {
+    return res.json({ ...scopeResponse, source: 'scope-guard' });
+  }
+
+  const systemInstruction = `You are the AI Chef inside Bharat Ki Thali 2.0.
+Your ONLY job is to answer the user's CURRENT food/cooking question. Never change the topic.
+Rules:
+- Answer only what the user asked; do not add unrelated suggestions, generic lists, or health lectures.
+- Use the supplied catalog for recipe facts. Never invent catalog IDs, ingredients, quantities, nutrition, timings, or steps.
+- If the user asks about a catalog dish, answer specifically about that dish.
+- If the user names ingredients, focus on recipes that actually contain those ingredients or explain a directly relevant cooking method.
+- If the user asks for a category/slot (roti, sabzi, dal, rice, sweet, drink), only recommend items from that category.
+- If the requested dish is not in the catalog, clearly say it is not currently in the catalog and provide only general cooking guidance if that directly answers the question.
+- Do not diagnose disease or promise health outcomes. Nutrition figures are catalog estimates.
+- Match the user's language (Hindi/Hinglish/English).
+- Keep the answer concise but complete.
+- When recommending catalog dishes, end with one JSON line exactly: {"recommendedDishes":["id1","id2"]}. Only use IDs present in CATALOG CONTEXT.
+- If no recommendation is needed, do not output the JSON line.
+
+CATALOG CONTEXT:
+${JSON.stringify(catalogContext)}`;
+
+  // Preserve the user's recent conversation so follow-up questions remain on-topic.
+  const recentHistory = Array.isArray(history)
+    ? history.slice(-6).map((item: any) => ({
+        role: item?.sender === 'user' ? 'user' : 'assistant',
+        text: String(item?.text || '').slice(0, 1500)
+      }))
+    : [];
+
+
+  // If Gemini API is available, invoke model
+  if (aiClient && process.env.GEMINI_API_KEY) {
+    try {
+      const response = await aiClient.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: [
+          ...recentHistory.map((item: any) => ({
+            role: item.role,
+            parts: [{ text: item.text }]
+          })),
+          { role: 'user', parts: [{ text: `${systemInstruction}\n\nCURRENT USER QUESTION: ${message}` }] }
+        ]
+      });
+
+      const replyText = response.text || '';
+      let recommendedDishes: string[] = [];
+      const jsonMatch = replyText.match(/\{\s*"recommendedDishes"\s*:\s*\[(.*?)\]\s*\}/s);
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[0]);
+          recommendedDishes = Array.isArray(parsed.recommendedDishes)
+            ? parsed.recommendedDishes.filter((id: unknown) => catalogMatches.some(d => d.id === id))
+            : [];
+        } catch {}
+      }
+      const cleanText = replyText.replace(/\n?\{\s*"recommendedDishes"\s*:\s*\[.*?\]\s*\}\s*$/s, '').trim();
+      return res.json({ text: cleanText, recommendedDishes, source: 'gemini' });
+    } catch (err: any) {
+      console.warn('Gemini API call failed, falling back to local expert engine:', err?.message || err);
+      const fallback = getSmartFallback(message);
+      return res.json({
+        text: fallback.text,
+        recommendedDishes: fallback.recommendedDishes,
+        source: 'fallback'
+      });
+    }
+  }
+
+  // Fallback response when no key
+  const fallback = getSmartFallback(message);
+  return res.json({
+    text: fallback.text,
+    recommendedDishes: fallback.recommendedDishes,
+    source: 'fallback'
+  });
+});
+
+// Vite Middleware for development & static serving for production
+async function startServer() {
+  if (!isProduction) {
+    const { createServer: createViteServer } = await import('vite');
+    const vite = await createViteServer({
+      server: { middlewareMode: true, hmr: false },
+      appType: 'spa'
+    });
+    app.use(vite.middlewares);
+  } else {
+    const distPath = path.resolve(process.cwd(), 'dist');
+    app.use(express.static(distPath));
+    app.get('*', (_req, res) => {
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  }
+
+  app.listen(Number(PORT), '0.0.0.0', () => {
+    console.log(`Server running at http://0.0.0.0:${PORT}`);
+  });
+}
+
+startServer();  // Deterministic fallback: never inject unrelated dishes.
   const getSmartFallback = (query: string) => {
-    const q = query.toLowerCase();
-    if (q.includes('protein') || q.includes('muscle')) {
+    const matches = searchCatalog(query, 4);
+    if (matches.length) {
       return {
-        text: `💪 **हाई-प्रोटीन भारतीय सुझाव:**\n\n1. **Moong Dal Chilla & Paneer Bhurji**: 20g+ शुद्ध शाकाहारी प्रोटीन।\n2. **Rajma Masala / Punjabi Chole**: ब्राउन राइस या ज्वार की रोटी के साथ बेहतरीन कॉम्बो।\n3. **Sattu Sharbat**: प्राकृतिक भारतीय व्हे-प्रोटीन जो पेट को ठंडा और ऊर्जावान रखता है।\n\n💡 *Chef Tip*: दालों को 4-6 घंटे भिगोकर बनाने से पोषक तत्व आसानी से पचते हैं!`,
-        recommendedDishes: ['moong-dal-chilla', 'rajma', 'paneer-bhurji', 'sattu-sharbat']
-      };
-    } else if (q.includes('weight') || q.includes('fat') || q.includes('vajan') || q.includes('diet')) {
-      return {
-        text: `🥗 **वजन नियंत्रण और लो-कैलोरी स्वादिष्ट व्यंजन:**\n\n1. **Steamed Idli & Sambar**: बिना तेल के भाप में पकी, गट-फ्रेंडली और हल्की।\n2. **Khaman Dhokla**: केवल 140 कैलोरी प्रति प्लेट, प्रोटीन और फाइबर से भरपूर।\n3. **Sprouts Usal Chaat**: अंकुरित मूंग में नींबू, प्याज, टमाटर और भुना जीरा।\n\n💡 *Chef Tip*: रात के खाने में 'खिचड़ी' या 'सूप' लें, जो 8 बजे से पहले समाप्त कर लें।`,
-        recommendedDishes: ['idli', 'dhokla', 'sprouts-chaat', 'khichdi']
-      };
-    } else if (q.includes('breakfast') || q.includes('nashta') || q.includes('subah')) {
-      return {
-        text: `☀️ **आज सुबह के 3 झटपट और पौष्टिक नाश्ते:**\n\n1. **Kanda Batata Poha**: 15 मिनट में तैयार, मूंगफली और नींबू के साथ शानदार ऊर्जा।\n2. **Methi Thepla**: दही और पुदीने की चटनी के साथ। 2-3 दिन तक ताज़ा रहता है।\n3. **Besan / Moong Chilla**: बिना मैदा, फाइबर और आयरन से भरपूर।`,
-        recommendedDishes: ['poha', 'thepla', 'besan-chilla']
-      };
-    } else if (q.includes('thali') || q.includes('lunch') || q.includes('dopahar')) {
-      return {
-        text: `🍽️ **संपूर्ण संतुलित थाली की योजना:**\n\n- **दाल**: तड़का दाल या राजमा मसाला\n- **सब्जी**: आलू गोभी या भिंडी मसाला\n- **रोटी/चावल**: 2 गरमा-गरम फुलके या जीरा राइस\n- **सलाद एवं ड्रिंक**: खीरा रायता और ठंडा मसाला छाछ\n- **मीठा**: थोड़ा सा गाजर का हलवा या गुड़ का टुकड़ा`,
-        recommendedDishes: ['tadka-dal', 'aloo-gobi', 'cucumber-raita', 'masala-chaas']
-      };
-    } else {
-      return {
-        text: `नमस्ते! 🙏 मैं आपका भारत की थाली शेफ हूँ।\n\nआप मुझसे किसी भी रेसिपी की विधि, फ्रिज में बची सब्जियों से क्या बनाएं, या किसी खास क्षेत्र (जैसे पंजाब, महाराष्ट्र, केरल, बंगाल) के पारंपरिक स्वादों के बारे में पूछ सकते हैं!\n\n💡 *उदाहरण के लिए पूछें*:\n• "मेरे पास आलू और टमाटर हैं, क्या बनाऊं?"\n• "संडे स्पेशल पंजाबी लंच बताओ"\n• "डायबिटीज में क्या खाना चाहिए?"`,
-        recommendedDishes: ['poha', 'dal-makhani', 'idli']
+        text: `आपके सवाल के हिसाब से मुझे ये संबंधित व्यंजन मिले: ${matches.map(d => d.name).join(', ')}। इनमें से किसी एक की पूरी विधि, सामग्री या nutrition details पूछ सकते हैं।`,
+        recommendedDishes: matches.map(d => d.id)
       };
     }
+    return {
+      text: `“${query}” के लिए हमारे वर्तमान recipe catalog में सीधा match नहीं मिला। अगर आप किसी dish, ingredient, recipe, cooking step, thali category या Indian cuisine के बारे में पूछ रहे हैं, तो सवाल थोड़ा specific लिखें।`,
+      recommendedDishes: []
+    };
   };
+
 
   // If Gemini API is available, invoke model
   if (aiClient && process.env.GEMINI_API_KEY) {
