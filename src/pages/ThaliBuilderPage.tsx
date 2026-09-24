@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ThaliSlotKey, ThaliSelection, Dish } from '../types';
+import { getCompatibleDishes, getPrimaryFoodCategory, getSlotLabel } from '../services/foodTaxonomy';
 
 export const ThaliBuilderPage: React.FC = () => {
   const { 
@@ -41,6 +42,7 @@ export const ThaliBuilderPage: React.FC = () => {
 
   const [thaliName, setThaliName] = useState('My Custom Indian Thali');
   const [activeSlotModal, setActiveSlotModal] = useState<ThaliSlotKey | null>(null);
+  const [slotSearch, setSlotSearch] = useState('');
 
   const slotLabels: Record<ThaliSlotKey, { en: string; hi: string; icon: string; defaultCat: string }> = {
     dal: { en: 'Dal / Curry', hi: 'दाल / कढ़ी', icon: '🥣', defaultCat: 'Dal & Soups' },
@@ -56,6 +58,15 @@ export const ThaliBuilderPage: React.FC = () => {
   const getDish = (dishId: string | undefined): Dish | undefined => {
     return dishId ? dishes.find(d => d.id === dishId) : undefined;
   };
+
+  const compatibleDishes = activeSlotModal
+    ? getCompatibleDishes(dishes, activeSlotModal).filter(d => {
+        const q = slotSearch.trim().toLowerCase();
+        if (!q) return true;
+        return [d.name, d.nameHindi, d.state, d.region, ...d.cuisine, ...d.ingredients.map(i => i.name)]
+          .join(' ').toLowerCase().includes(q);
+      })
+    : [];
 
   const handleSelectDishForSlot = (dishId: string) => {
     if (activeSlotModal) {
@@ -206,7 +217,7 @@ export const ThaliBuilderPage: React.FC = () => {
             
             {/* Central Platter Plate: Rotis / Rice */}
             <div className="w-[110px] h-[110px] sm:w-[150px] sm:h-[150px] rounded-full bg-white dark:bg-stone-800 border-4 border-amber-500/40 shadow-md flex flex-col items-center justify-center p-2 text-center group cursor-pointer hover:scale-105 transition-transform"
-              onClick={() => setActiveSlotModal('roti')}
+              onClick={() => { setActiveSlotModal('roti'); setSlotSearch(''); }}
             >
               <span className="text-xl sm:text-2xl">🫓</span>
               <p className="text-[10px] sm:text-xs font-bold text-stone-900 dark:text-stone-100 line-clamp-1">
@@ -227,7 +238,7 @@ export const ThaliBuilderPage: React.FC = () => {
               return (
                 <div
                   key={slotKey}
-                  onClick={() => setActiveSlotModal(slotKey)}
+                  onClick={() => { setActiveSlotModal(slotKey); setSlotSearch(''); }}
                   className="absolute w-[68px] h-[68px] sm:w-[94px] sm:h-[94px] rounded-full bg-white dark:bg-stone-800 border-2 sm:border-3 border-amber-500/50 shadow-lg flex flex-col items-center justify-center p-1 text-center cursor-pointer hover:scale-110 hover:border-[#E8620C] transition-all group overflow-hidden"
                   style={{
                     transform: `translate(${Math.cos(angle) * (window.innerWidth < 640 ? radius : radiusSm)}px, ${Math.sin(angle) * (window.innerWidth < 640 ? radius : radiusSm)}px)`
@@ -299,7 +310,7 @@ export const ThaliBuilderPage: React.FC = () => {
               return (
                 <div
                   key={slotKey}
-                  onClick={() => setActiveSlotModal(slotKey)}
+                  onClick={() => { setActiveSlotModal(slotKey); setSlotSearch(''); }}
                   className="flex items-center justify-between p-3 rounded-2xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 hover:border-[#E8620C] cursor-pointer transition-colors"
                 >
                   <div className="flex items-center gap-3">
@@ -347,15 +358,27 @@ export const ThaliBuilderPage: React.FC = () => {
                 </p>
               </div>
               <button
-                onClick={() => setActiveSlotModal(null)}
+                onClick={() => { setActiveSlotModal(null); setSlotSearch(''); }}
                 className="p-2 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-500"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
+            <div className="mb-3 relative">
+              <input
+                value={slotSearch}
+                onChange={(e) => setSlotSearch(e.target.value)}
+                placeholder={isHindi ? `${getSlotLabel(activeSlotModal)} में खोजें...` : `Search within ${getSlotLabel(activeSlotModal)}...`}
+                className="w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 px-3 py-2.5 text-sm outline-none focus:border-[#E8620C]"
+                autoFocus
+              />
+            </div>
+            <div className="mb-3 rounded-xl bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900 px-3 py-2 text-xs text-stone-600 dark:text-stone-300">
+              <strong className="text-[#E8620C]">{compatibleDishes.length}</strong> {isHindi ? 'उपयुक्त व्यंजन मिले' : 'matching dishes found'} • {getSlotLabel(activeSlotModal)}
+            </div>
             <div className="overflow-y-auto space-y-2 flex-1 pr-1">
-              {dishes.map((d) => (
+              {compatibleDishes.map((d) => (
                 <div
                   key={d.id}
                   onClick={() => handleSelectDishForSlot(d.id)}
@@ -368,7 +391,7 @@ export const ThaliBuilderPage: React.FC = () => {
                         {d.name}
                       </h4>
                       <p className="text-xs text-stone-500">
-                        {d.nameHindi} • {d.totalTimeMinutes}m • {d.nutrition.calories} kcal
+                        {d.nameHindi} • {getPrimaryFoodCategory(d)} • {d.totalTimeMinutes}m • {d.nutrition.calories} kcal
                       </p>
                     </div>
                   </div>
@@ -377,6 +400,11 @@ export const ThaliBuilderPage: React.FC = () => {
                   </span>
                 </div>
               ))}
+              {compatibleDishes.length === 0 && (
+                <div className="py-10 text-center text-sm text-stone-500">
+                  {isHindi ? 'इस श्रेणी में अभी कोई व्यंजन उपलब्ध नहीं है।' : 'No dish is currently mapped to this category.'}
+                </div>
+              )}
             </div>
           </div>
         </div>

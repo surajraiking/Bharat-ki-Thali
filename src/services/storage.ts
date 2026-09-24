@@ -1,4 +1,4 @@
-import { Dish, ShoppingItem, WeeklyMealPlan, SavedThali, UserPreferences } from '../types';
+import { Dish, ShoppingItem, WeeklyMealPlan, SavedThali, UserPreferences, RecipeCollection } from '../types';
 
 const STORAGE_KEYS = {
   FAVORITES: 'bkt_favorites_v2',
@@ -77,6 +77,23 @@ export const storageService = {
     }
     this.saveFavorites(list);
     return isFav;
+  },
+
+  getCollections(): RecipeCollection[] {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.COLLECTIONS);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  saveCollections(collections: RecipeCollection[]): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.COLLECTIONS, JSON.stringify(collections));
+    } catch (err) {
+      console.error('Failed to save collections:', err);
+    }
   },
 
   getRecentlyViewed(): string[] {
@@ -222,6 +239,7 @@ export const storageService = {
       exportedAt: new Date().toISOString(),
       favorites: this.getFavorites(),
       recentlyViewed: this.getRecentlyViewed(),
+      collections: this.getCollections(),
       shoppingList: this.getShoppingList(),
       mealPlan: this.getMealPlan(),
       savedThalis: this.getSavedThalis(),
@@ -235,6 +253,7 @@ export const storageService = {
       const data = JSON.parse(jsonString);
       if (data.favorites) this.saveFavorites(data.favorites);
       if (data.shoppingList) this.saveShoppingList(data.shoppingList);
+      if (Array.isArray(data.collections)) this.saveCollections(data.collections);
       if (data.mealPlan) this.saveMealPlan(data.mealPlan);
       if (data.savedThalis) this.saveSavedThalis(data.savedThalis);
       if (data.settings) this.saveSettings(data.settings);

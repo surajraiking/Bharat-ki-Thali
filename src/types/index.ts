@@ -194,3 +194,12 @@ export interface StateInfo {
   festivalFoods: string[];
   image: string;
 }
+
+
+export interface RecipeCollection {
+  id: string;
+  name: string;
+  description?: string;
+  dishIds: string[];
+  createdAt: number;
+}

@@ -4,59 +4,100 @@
   :root {
     --font-heading: 'Baloo 2', system-ui, -apple-system, sans-serif;
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --thali-saffron: #E8620C;
+    --thali-gold: #C9973E;
+    --thali-green: #173B2F;
+    --thali-cream: #FFF8EA;
   }
 
   body {
     font-family: var(--font-sans);
+    background: radial-gradient(circle at 20% 0%, rgba(232,98,12,.08), transparent 28%), radial-gradient(circle at 90% 10%, rgba(201,151,62,.10), transparent 30%), #FFFDF9;
   }
 
   h1, h2, h3, h4, .font-heading {
     font-family: var(--font-heading);
+    text-shadow: 0 1px 0 rgba(255,255,255,.8), 0 3px 8px rgba(75,42,15,.10);
+  }
+
+  button, a, input, select, textarea {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
+/* Bharat Ki Thali 3D visual system: layered depth, embossed surfaces and tactile controls. */
+.thali-3d-app {
+  perspective: 1400px;
+  background-image: radial-gradient(rgba(201,151,62,.08) 1px, transparent 1px), radial-gradient(rgba(232,98,12,.055) 1px, transparent 1px);
+  background-size: 28px 28px, 28px 28px;
+  background-position: 0 0, 14px 14px;
+}
+
+.thali-3d-app button:not(:disabled) {
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+}
+
+.thali-3d-app button:not(:disabled):active {
+  transform: translateY(2px) scale(.985);
+}
+
+.thali-3d-app .rounded-2xl,
+.thali-3d-app .rounded-3xl {
+  box-shadow: 0 1px 0 rgba(255,255,255,.85) inset, 0 7px 18px rgba(74,42,14,.07), 0 2px 4px rgba(74,42,14,.06);
+}
+
+.thali-3d-app .bg-white {
+  background: linear-gradient(145deg, #ffffff 0%, #fffaf2 100%);
+}
+
+.thali-3d-app .bg-\[\#E8620C\] {
+  background-image: linear-gradient(145deg, #ff9a38 0%, #e8620c 55%, #b84405 100%);
+  box-shadow: 0 5px 0 #a63f05, 0 10px 22px rgba(232,98,12,.25), inset 0 1px 0 rgba(255,255,255,.35);
+}
+
+.thali-3d-app .font-heading {
+  letter-spacing: .01em;
+}
+
+.thali-3d-app img {
+  image-rendering: auto;
+}
+
+/* Premium 3D brand treatment */
+.thali-3d-brand {
+  filter: drop-shadow(0 10px 12px rgba(45,29,14,.18));
+  transform: translateZ(10px);
+}
+
+.dark .thali-3d-app {
+  background-color: #1C140E;
+  background-image: radial-gradient(rgba(201,151,62,.08) 1px, transparent 1px), radial-gradient(rgba(232,98,12,.06) 1px, transparent 1px);
+}
+
+.dark .thali-3d-app .bg-white {
+  background: linear-gradient(145deg, #2b2119 0%, #211810 100%);
+}
+
 /* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(232, 98, 12, 0.25);
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(232, 98, 12, 0.45);
-}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(232, 98, 12, 0.25); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(232, 98, 12, 0.45); }
 
-/* Hide scrollbar for clean chip strips */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Subtle Rangoli / Indian motif background accents */
 .bg-rangoli-pattern {
   background-image: radial-gradient(rgba(232, 98, 12, 0.08) 1.5px, transparent 1.5px), radial-gradient(rgba(244, 180, 0, 0.08) 1.5px, transparent 1.5px);
   background-size: 24px 24px;
   background-position: 0 0, 12px 12px;
 }
-
 .dark .bg-rangoli-pattern {
   background-image: radial-gradient(rgba(232, 98, 12, 0.15) 1.5px, transparent 1.5px), radial-gradient(rgba(244, 180, 0, 0.1) 1.5px, transparent 1.5px);
 }
 
-/* Distraction free cooking mode keyframe animation */
 @keyframes pulseSlow {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.85; transform: scale(1.02); }
 }
-
-.animate-pulse-slow {
-  animation: pulseSlow 3s infinite ease-in-out;
-}
+.animate-pulse-slow { animation: pulseSlow 3s infinite ease-in-out; }

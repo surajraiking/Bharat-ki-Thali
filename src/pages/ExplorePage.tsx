@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { 
   Search, 
   Filter, 
@@ -13,10 +13,23 @@ import {
 import { useApp } from '../context/AppContext';
 import { RecipeCard } from '../components/RecipeCard';
 import { MealType, DietType, DifficultyType, SortOption } from '../types';
+import { getPrimaryFoodCategory } from '../services/foodTaxonomy';
 
 export const ExplorePage: React.FC = () => {
   const { dishes, filters, setFilters, resetFilters, settings } = useApp();
   const isHindi = settings.language === 'hi';
+  const [searchInput, setSearchInput] = useState(filters.searchQuery);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (searchInput !== filters.searchQuery) setFilters(prev => ({ ...prev, searchQuery: searchInput }));
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [searchInput]);
+
+  useEffect(() => {
+    setSearchInput(filters.searchQuery);
+  }, [filters.searchQuery]);
 
   const mealOptions: (MealType | 'All')[] = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Snack', 'Dessert'];
   const dietOptions: (DietType | 'All')[] = ['All', 'Vegetarian', 'Vegan', 'Jain', 'Non-Veg'];
@@ -24,6 +37,9 @@ export const ExplorePage: React.FC = () => {
   const timeOptions: (number | 'All')[] = ['All', 15, 30, 60];
   const regionOptions = ['All', 'North India', 'South India', 'West India', 'East India', 'Northeast India'];
   const healthOptions = ['All', 'High Protein', 'Weight Loss', 'Diabetic Friendly', 'Gut Friendly', 'Less Oil'];
+  const stateOptions = useMemo(() => ['All', ...Array.from(new Set(dishes.map(d => d.state).filter(Boolean))).sort()], [dishes]);
+  const festivalOptions = useMemo(() => ['All', ...Array.from(new Set(dishes.flatMap(d => d.festival || []))).sort()], [dishes]);
+  const categoryOptions = useMemo(() => ['All', ...Array.from(new Set(dishes.map(getPrimaryFoodCategory))).sort()], [dishes]);
 
   // Filtered & Sorted Dishes
   const filteredDishes = useMemo(() => {
@@ -82,7 +98,7 @@ export const ExplorePage: React.FC = () => {
       }
 
       // Category check
-      if (filters.category !== 'All' && !dish.category.includes(filters.category)) {
+      if (filters.category !== 'All' && getPrimaryFoodCategory(dish) !== filters.category) {
         return false;
       }
 
@@ -117,8 +133,8 @@ export const ExplorePage: React.FC = () => {
           <Search className="w-5 h-5 text-stone-400 ml-4 shrink-0" />
           <input
             type="text"
-            value={filters.searchQuery}
-            onChange={(e) => setFilters(prev => ({ ...prev, searchQuery: e.target.value }))}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             placeholder={isHindi ? 'डिश का नाम, सामग्री (जैसे: पनीर, टमाटर), या राज्य लिखें...' : 'Search by dish name, ingredient (e.g. Paneer, Chana), or state...'}
             className="w-full py-3.5 px-3 text-sm bg-transparent text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none"
           />
@@ -130,6 +146,34 @@ export const ExplorePage: React.FC = () => {
               Clear
             </button>
           )}
+        </div>
+      </div>
+
+      {/* Canonical food categories */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+            {isHindi ? 'खाने की श्रेणियां' : 'Browse by food category'}
+          </h2>
+          <span className="text-[11px] text-stone-400">{dishes.length} recipes</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+          {categoryOptions.filter(c => c !== 'All').map(category => {
+            const count = dishes.filter(d => getPrimaryFoodCategory(d) === category).length;
+            const active = filters.category === category;
+            return (
+              <button
+                key={category}
+                onClick={() => setFilters(prev => ({ ...prev, category: active ? 'All' : category }))}
+                className={`rounded-xl border px-3 py-2.5 text-left transition-all ${active
+                  ? 'border-[#E8620C] bg-[#E8620C] text-white shadow-sm'
+                  : 'border-stone-200 dark:border-stone-800 bg-white dark:bg-[#251D16] text-stone-700 dark:text-stone-300 hover:border-[#E8620C]'}`}
+              >
+                <span className="block text-[11px] font-bold leading-tight">{category}</span>
+                <span className={`text-[10px] ${active ? 'text-white/80' : 'text-stone-400'}`}>{count} items</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -226,6 +270,14 @@ export const ExplorePage: React.FC = () => {
               <option value="proteinHigh">Highest Protein (ज्यादा प्रोटीन)</option>
             </select>
           </div>
+        </div>
+
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <div><label className="text-xs font-bold text-stone-500 dark:text-stone-400 mb-1.5 block uppercase tracking-wider">State</label><select value={filters.state} onChange={e => setFilters(prev => ({...prev,state:e.target.value}))} className="w-full py-2 px-3 rounded-xl bg-stone-100 dark:bg-stone-800 text-xs font-semibold">{stateOptions.map(x => <option key={x}>{x}</option>)}</select></div>
+          <div><label className="text-xs font-bold text-stone-500 dark:text-stone-400 mb-1.5 block uppercase tracking-wider">Difficulty</label><select value={filters.difficulty} onChange={e => setFilters(prev => ({...prev,difficulty:e.target.value as DifficultyType}))} className="w-full py-2 px-3 rounded-xl bg-stone-100 dark:bg-stone-800 text-xs font-semibold">{difficultyOptions.map(x => <option key={x}>{x}</option>)}</select></div>
+          <div><label className="text-xs font-bold text-stone-500 dark:text-stone-400 mb-1.5 block uppercase tracking-wider">Festival</label><select value={filters.festival} onChange={e => setFilters(prev => ({...prev,festival:e.target.value}))} className="w-full py-2 px-3 rounded-xl bg-stone-100 dark:bg-stone-800 text-xs font-semibold">{festivalOptions.map(x => <option key={x}>{x}</option>)}</select></div>
+          <div><label className="text-xs font-bold text-stone-500 dark:text-stone-400 mb-1.5 block uppercase tracking-wider">Category</label><select value={filters.category} onChange={e => setFilters(prev => ({...prev,category:e.target.value}))} className="w-full py-2 px-3 rounded-xl bg-stone-100 dark:bg-stone-800 text-xs font-semibold">{categoryOptions.map(x => <option key={x}>{x}</option>)}</select></div>
         </div>
 
         {/* Health Tags Quick Row */}

@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
-import { Heart, Search, ArrowRight } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Heart, Plus, Trash2, FolderHeart } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { RecipeCard } from '../components/RecipeCard';
 
 export const FavoritesPage: React.FC = () => {
-  const { favorites, dishes, setActivePage, settings } = useApp();
+  const { favorites, dishes, setActivePage, settings, collections, createCollection, deleteCollection, toggleDishInCollection } = useApp();
   const [filterTag, setFilterTag] = useState<string>('All');
 
   const isHindi = settings.language === 'hi';
 
   const favoriteDishes = dishes.filter(d => favorites.includes(d.id));
+  const [newCollection, setNewCollection] = useState('');
+  const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
+  const collectionDishes = useMemo(() => {
+    const collection = collections.find(c => c.id === selectedCollection);
+    return collection ? dishes.filter(d => collection.dishIds.includes(d.id)) : [];
+  }, [collections, selectedCollection, dishes]);
 
   const filtered = favoriteDishes.filter(d => {
     if (filterTag === 'All') return true;
@@ -56,6 +62,40 @@ export const FavoritesPage: React.FC = () => {
           </div>
         )}
       </div>
+
+
+      {/* Collections */}
+      <section className="mb-10">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 className="font-heading font-extrabold text-xl text-stone-900 dark:text-stone-100 flex items-center gap-2"><FolderHeart className="w-5 h-5 text-rose-500" /> Collections</h2>
+            <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Create your own recipe folders and keep favorites organized.</p>
+          </div>
+          <form onSubmit={(e) => { e.preventDefault(); createCollection(newCollection); setNewCollection(''); }} className="flex gap-2">
+            <input value={newCollection} onChange={e => setNewCollection(e.target.value)} placeholder="New collection" className="w-36 sm:w-48 px-3 py-2 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#251D16] text-xs focus:outline-none focus:ring-2 focus:ring-[#E8620C]/30" />
+            <button type="submit" className="px-3 py-2 rounded-xl bg-[#E8620C] text-white text-xs font-bold flex items-center gap-1"><Plus className="w-3.5 h-3.5" /> Add</button>
+          </form>
+        </div>
+        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+          {collections.map(collection => (
+            <div key={collection.id} className="min-w-44 rounded-2xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#251D16] p-3">
+              <button onClick={() => setSelectedCollection(collection.id)} className="text-left w-full">
+                <p className="font-bold text-sm text-stone-900 dark:text-stone-100 truncate">{collection.name}</p>
+                <p className="text-[11px] text-stone-500 mt-1">{collection.dishIds.length} recipes</p>
+              </button>
+              <div className="flex justify-end mt-2"><button onClick={() => deleteCollection(collection.id)} aria-label="Delete collection" className="text-stone-400 hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button></div>
+            </div>
+          ))}
+        </div>
+        {selectedCollection && (
+          <div className="mt-4 p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/40 border border-stone-200 dark:border-stone-800">
+            <div className="flex justify-between mb-3"><h3 className="font-bold text-sm">Collection recipes</h3><button onClick={() => setSelectedCollection(null)} className="text-xs text-[#E8620C]">Close</button></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">{collectionDishes.map(d => <RecipeCard key={d.id} dish={d} />)}</div>
+            {collectionDishes.length === 0 && <p className="text-xs text-stone-500">Open a recipe and add it to this collection.</p>}
+          </div>
+        )}
+        {collections.length > 0 && favoriteDishes.length > 0 && <p className="text-[11px] text-stone-500 mt-3">Tip: collection membership can be managed from recipe details.</p>}
+      </section>
 
       {/* Grid */}
       {filtered.length > 0 ? (

@@ -27,7 +27,10 @@ export const RecipeModal: React.FC = () => {
     toggleFavorite, 
     addToShoppingList, 
     showToast,
-    settings 
+    settings,
+    collections,
+    navigate,
+    toggleDishInCollection
   } = useApp();
 
   const [servings, setServings] = useState<number>(() => selectedDish ? selectedDish.servings : 2);
@@ -101,7 +104,7 @@ export const RecipeModal: React.FC = () => {
             <Heart className={`w-4 h-4 ${favorited ? 'fill-current' : ''}`} />
           </button>
           <button
-            onClick={() => setSelectedDish(null)}
+            onClick={() => navigate('/explore')}
             className="p-2.5 rounded-full bg-black/50 text-white hover:bg-black/70 shadow-md backdrop-blur-md transition-all"
             title="Close"
           >
@@ -282,7 +285,21 @@ export const RecipeModal: React.FC = () => {
                 ))}
               </div>
 
-              {/* Add All to Shopping Button */}
+  
+          {/* Personal Collections */}
+          {collections.length > 0 && (
+            <div className="mb-6 p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/40 border border-stone-200 dark:border-stone-800">
+              <h3 className="font-heading font-bold text-sm text-stone-900 dark:text-stone-100 mb-3">Save to Collection</h3>
+              <div className="flex flex-wrap gap-2">
+                {collections.map(collection => {
+                  const saved = collection.dishIds.includes(selectedDish.id);
+                  return <button key={collection.id} onClick={() => toggleDishInCollection(collection.id, selectedDish.id)} className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors ${saved ? 'bg-[#E8620C] text-white border-[#E8620C]' : 'bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 border-stone-200 dark:border-stone-700'}`}>{saved ? '✓ ' : '+ '}{collection.name}</button>;
+                })}
+              </div>
+            </div>
+          )}
+
+            {/* Add All to Shopping Button */}
               <button
                 onClick={() => addToShoppingList(selectedDish, scale)}
                 className="mt-4 w-full py-2.5 px-4 rounded-xl border border-[#E8620C]/40 text-[#E8620C] dark:text-[#F4813F] font-semibold text-xs sm:text-sm hover:bg-[#E8620C]/10 flex items-center justify-center gap-2 transition-colors"

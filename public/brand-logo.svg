@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">Bharat Ki Thali — Suraj Rai</title>
+  <desc id="desc">Premium Indian food brand logo with a traditional thali plate, saffron and green accents, and creator name Suraj Rai.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFF8EA"/><stop offset="1" stop-color="#FFFDF9"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFD978"/><stop offset=".5" stop-color="#C9973E"/><stop offset="1" stop-color="#8B5A1B"/></linearGradient>
+    <linearGradient id="saffron" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FF9A2E"/><stop offset="1" stop-color="#D94B0B"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-opacity=".18"/></filter>
+  </defs>
+  <rect width="1200" height="360" rx="56" fill="url(#bg)"/>
+  <g transform="translate(42 42)" filter="url(#shadow)">
+    <rect width="276" height="276" rx="72" fill="#173B2F"/>
+    <circle cx="138" cy="138" r="105" fill="none" stroke="url(#gold)" stroke-width="7"/>
+    <circle cx="138" cy="138" r="88" fill="#FFFDF9" stroke="#E7C47A" stroke-width="3"/>
+    <circle cx="101" cy="103" r="28" fill="#E8620C"/><circle cx="175" cy="101" r="27" fill="#2F8A58"/>
+    <circle cx="104" cy="174" r="28" fill="#F2C94C"/><circle cx="177" cy="174" r="27" fill="#C94B28"/>
+    <ellipse cx="138" cy="140" rx="38" ry="28" fill="#FFF4D7" stroke="#C9973E" stroke-width="3"/>
+    <path d="M126 113c-12-22 12-28 2-47M148 111c-12-22 12-28 2-47" fill="none" stroke="#E8B85C" stroke-width="5" stroke-linecap="round"/>
+    <path d="M72 138h132" stroke="#173B2F" stroke-width="3" opacity=".18"/>
+    <circle cx="138" cy="138" r="9" fill="#C9973E"/>
+  </g>
+  <g transform="translate(365 72)">
+    <text x="0" y="84" font-family="Georgia, 'Noto Serif Devanagari', serif" font-size="72" font-weight="800" fill="#24180E">भारत की थाली</text>
+    <text x="4" y="132" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="26" font-weight="700" letter-spacing="7" fill="#D95A0B">BHARAT KI THALI</text>
+    <path d="M5 157H620" stroke="url(#gold)" stroke-width="3"/>
+    <text x="5" y="201" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="22" font-weight="600" fill="#6F6258">Discover India, One Dish at a Time</text>
+    <text x="5" y="247" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="20" font-weight="800" letter-spacing="2" fill="#173B2F">CREATED BY SURAJ RAI</text>
+  </g>
+</svg>
