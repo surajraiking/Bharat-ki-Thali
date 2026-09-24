@@ -5,7 +5,8 @@ import {
   WeeklyMealPlan, 
   SavedThali, 
   UserPreferences,
-  FilterState 
+  FilterState,
+  RecipeCollection
 } from '../types';
 import { allDishes } from '../data/dishes';
 import { storageService } from '../services/storage';
@@ -24,6 +25,7 @@ export type AppPage =
 interface AppContextType {
   activePage: AppPage;
   setActivePage: (page: AppPage) => void;
+  navigate: (path: string, replace?: boolean) => void;
   selectedDish: Dish | null;
   setSelectedDish: (dish: Dish | null) => void;
   cookingDish: Dish | null;
@@ -38,6 +40,10 @@ interface AppContextType {
   favorites: string[];
   toggleFavorite: (dishId: string) => void;
   isFavorite: (dishId: string) => boolean;
+  collections: RecipeCollection[];
+  createCollection: (name: string, description?: string) => void;
+  deleteCollection: (id: string) => void;
+  toggleDishInCollection: (collectionId: string, dishId: string) => void;
   recentlyViewed: string[];
   viewDish: (dish: Dish) => void;
   clearRecentlyViewed: () => void;
@@ -97,6 +103,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [activePage, setActivePage] = useState<AppPage>('home');
   const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
+  const [collections, setCollections] = useState<RecipeCollection[]>(() => storageService.getCollections());
   const [cookingDish, setCookingDish] = useState<Dish | null>(null);
   const [isApkModalOpen, setIsApkModalOpen] = useState(false);
   const [isSurpriseModalOpen, setIsSurpriseModalOpen] = useState(false);
@@ -110,6 +117,50 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [savedThalis, setSavedThalis] = useState<SavedThali[]>(() => storageService.getSavedThalis());
   const [settings, setSettings] = useState<UserPreferences>(() => storageService.getSettings());
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
+
+  const pathForPage = (page: AppPage) => `/${page === 'home' ? '' : page}`;
+  const navigate = (path: string, replace = false) => {
+    const clean = path || '/';
+    const [pathname, queryString] = clean.split('?');
+    const pageMap: Record<string, AppPage> = {
+      '/': 'home', '/explore': 'explore', '/regions': 'regions', '/meal-planner': 'meal-planner',
+      '/thali-builder': 'thali-builder', '/shopping-list': 'shopping-list', '/ai-chef': 'ai-chef',
+      '/favorites': 'favorites', '/settings': 'settings'
+    };
+    if (pathname.startsWith('/recipe/')) {
+      const id = decodeURIComponent(pathname.slice('/recipe/'.length));
+      const dish = allDishes.find(d => d.id === id);
+      if (dish) { viewDish(dish); }
+    } else {
+      setActivePage(pageMap[pathname] || 'home');
+    }
+    if (queryString) {
+      const params = new URLSearchParams(queryString);
+      const q = params.get('q');
+      if (q !== null) setFilters(prev => ({ ...prev, searchQuery: q }));
+    }
+    if (replace) window.history.replaceState({}, '', clean);
+    else window.history.pushState({}, '', clean);
+  };
+
+  useEffect(() => {
+    const onPopState = () => {
+      const path = window.location.pathname + window.location.search;
+      navigate(path, true);
+    };
+    onPopState();
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  useEffect(() => {
+    const path = pathForPage(activePage);
+    const query = activePage === 'explore' && filters.searchQuery ? `?q=${encodeURIComponent(filters.searchQuery)}` : '';
+    const target = path + query;
+    if (window.location.pathname + window.location.search !== target && !window.location.pathname.startsWith('/recipe/')) {
+      window.history.replaceState({}, '', target);
+    }
+  }, [activePage, filters.searchQuery]);
 
   // Apply dark mode class to document
   useEffect(() => {
@@ -138,6 +189,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const isFavorite = (dishId: string) => favorites.includes(dishId);
+
+  const createCollection = (name: string, description?: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const next = [{ id: `collection-${Date.now()}`, name: trimmed, description, dishIds: [], createdAt: Date.now() }, ...collections];
+    storageService.saveCollections(next); setCollections(next); showToast(`Collection “${trimmed}” created`);
+  };
+
+  const deleteCollection = (id: string) => { const next = collections.filter(c => c.id !== id); storageService.saveCollections(next); setCollections(next); };
+  const toggleDishInCollection = (collectionId: string, dishId: string) => {
+    const next = collections.map(c => c.id !== collectionId ? c : ({ ...c, dishIds: c.dishIds.includes(dishId) ? c.dishIds.filter(id => id !== dishId) : [...c.dishIds, dishId] }));
+    storageService.saveCollections(next); setCollections(next);
+  };
 
   const viewDish = (dish: Dish) => {
     storageService.addRecentlyViewed(dish.id);
@@ -273,6 +337,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const setQuickSearch = (query: string) => {
     setFilters(prev => ({ ...prev, searchQuery: query }));
     setActivePage('explore');
+    window.history.pushState({}, '', `/explore?q=${encodeURIComponent(query)}`);
   };
 
   const setQuickFilter = (key: keyof FilterState, value: any) => {
@@ -285,6 +350,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       value={{
         activePage,
         setActivePage,
+        navigate,
         selectedDish,
         setSelectedDish,
         cookingDish,
@@ -297,6 +363,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         favorites,
         toggleFavorite,
         isFavorite,
+        collections,
+        createCollection,
+        deleteCollection,
+        toggleDishInCollection,
         recentlyViewed,
         viewDish,
         clearRecentlyViewed,
