@@ -20,13 +20,13 @@ const DEFAULT_SETTINGS: UserPreferences = {
 };
 
 const DEFAULT_MEAL_PLAN: WeeklyMealPlan = {
-  monday: { breakfast: 'poha', lunch: 'rajma', dinner: 'khichdi' },
-  tuesday: { breakfast: 'idli', lunch: 'palak-dal', dinner: 'aloo-gobi' },
-  wednesday: { breakfast: 'moong-dal-chilla', lunch: 'chole', dinner: 'bhindi-masala' },
-  thursday: { breakfast: 'upma', lunch: 'sambar', dinner: 'curd-rice' },
-  friday: { breakfast: 'thepla', lunch: 'kadhi-pakora', dinner: 'lauki-chana-dal' },
-  saturday: { breakfast: 'mumbai-vada-pav', lunch: 'hyderabadi-biryani', dinner: 'moong-dal-soup' },
-  sunday: { breakfast: 'amritsari-kulcha', lunch: 'rajasthani-dal-baati-churma', dinner: 'kheer' }
+  monday: { breakfast: 'poha', lunch: 'rajma-masala', dinner: 'moong-dal-khichdi' },
+  tuesday: { breakfast: 'oats-idli', lunch: 'dal-palak', dinner: 'bhindi-masala' },
+  wednesday: { breakfast: 'moong-dal-chilla', lunch: 'chana-masala', dinner: 'karela-sabzi' },
+  thursday: { breakfast: 'vegetable-upma', lunch: 'south-indian-sambar', dinner: 'curd-rice' },
+  friday: { breakfast: 'methi-thepla', lunch: 'lauki-chana-dal', dinner: 'gobi-gajar-matar' },
+  saturday: { breakfast: 'mumbai-vada-pav', lunch: 'hyderabadi-biryani', dinner: 'kulthi-dal-soup' },
+  sunday: { breakfast: 'amritsari-kulcha', lunch: 'rajasthani-dal-baati-churma', dinner: 'makhana-kheer' }
 };
 
 export const storageService = {
@@ -50,7 +50,7 @@ export const storageService = {
   getFavorites(): string[] {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.FAVORITES);
-      return data ? JSON.parse(data) : ['poha', 'rajma', 'idli', 'dal-makhani'];
+      return data ? JSON.parse(data) : ['poha', 'rajma-masala', 'oats-idli'];
     } catch {
       return [];
     }
@@ -176,13 +176,13 @@ export const storageService = {
           id: 'thali-classic-north',
           name: 'Classic North Indian Thali',
           items: {
-            dal: 'rajma',
-            sabzi: 'aloo-gobi',
-            rice: 'vegetable-pulao',
+            dal: 'rajma-masala',
+            sabzi: 'bhindi-masala',
+            rice: 'lemon-rice',
             roti: 'amritsari-kulcha',
-            salad: 'cucumber-raita',
-            chutney: 'masala-chaas',
-            sweet: 'kheer',
+            salad: 'cucumber-mint-raita',
+            chutney: 'khaman-dhokla',
+            sweet: 'makhana-kheer',
             drink: 'masala-chaas'
           },
           createdAt: Date.now() - 86400000
@@ -191,13 +191,13 @@ export const storageService = {
           id: 'thali-gujarati-farsan',
           name: 'Royal Gujarati Winter Thali',
           items: {
-            dal: 'tadka-dal',
+            dal: 'dal-tadka',
             sabzi: 'gujarati-undhiyu',
-            rice: 'khichdi',
-            roti: 'thepla',
-            salad: 'cucumber-raita',
-            chutney: 'khandvi',
-            sweet: 'gajar-halwa',
+            rice: 'moong-dal-khichdi',
+            roti: 'methi-thepla',
+            salad: 'cucumber-mint-raita',
+            chutney: 'khaman-dhokla',
+            sweet: 'healthy-gajar-halwa',
             drink: 'masala-chaas'
           },
           createdAt: Date.now() - 172800000
