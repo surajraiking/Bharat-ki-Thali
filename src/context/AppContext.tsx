@@ -45,7 +45,7 @@ interface AppContextType {
   deleteCollection: (id: string) => void;
   toggleDishInCollection: (collectionId: string, dishId: string) => void;
   recentlyViewed: string[];
-  viewDish: (dish: Dish) => void;
+  viewDish: (dish: Dish, updateUrl?: boolean) => void;
   clearRecentlyViewed: () => void;
   
   // Shopping list
@@ -130,7 +130,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (pathname.startsWith('/recipe/')) {
       const id = decodeURIComponent(pathname.slice('/recipe/'.length));
       const dish = allDishes.find(d => d.id === id);
-      if (dish) { viewDish(dish); }
+      if (dish) { viewDish(dish, false); }
     } else {
       setActivePage(pageMap[pathname] || 'home');
     }
@@ -203,10 +203,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     storageService.saveCollections(next); setCollections(next);
   };
 
-  const viewDish = (dish: Dish) => {
+  const viewDish = (dish: Dish, updateUrl = true) => {
     storageService.addRecentlyViewed(dish.id);
     setRecentlyViewed(storageService.getRecentlyViewed());
     setSelectedDish(dish);
+    if (updateUrl && window.location.pathname !== `/recipe/${encodeURIComponent(dish.id)}`) {
+      window.history.pushState({}, '', `/recipe/${encodeURIComponent(dish.id)}`);
+    }
   };
 
   const clearRecentlyViewed = () => {
