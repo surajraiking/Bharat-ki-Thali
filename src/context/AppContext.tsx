@@ -132,6 +132,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const dish = allDishes.find(d => d.id === id);
       if (dish) { viewDish(dish, false); }
     } else {
+      setSelectedDish(null);
       setActivePage(pageMap[pathname] || 'home');
     }
     if (queryString) {
