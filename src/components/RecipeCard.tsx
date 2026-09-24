@@ -2,6 +2,7 @@ import React from 'react';
 import { Clock, Flame, Heart, Sparkles, Plus, ChefHat } from 'lucide-react';
 import { Dish } from '../types';
 import { useApp } from '../context/AppContext';
+import { getPrimaryFoodCategory } from '../services/foodTaxonomy';
 
 interface RecipeCardProps {
   dish: Dish;
