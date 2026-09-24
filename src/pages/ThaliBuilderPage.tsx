@@ -57,7 +57,39 @@ export const ThaliBuilderPage: React.FC = () => {
     return dishId ? dishes.find(d => d.id === dishId) : undefined;
   };
 
-  // The master list stays intact; the picker is filtered only to the selected bowl.\n  const getDishesForSlot = (slot: ThaliSlotKey): Dish[] => {\n    return dishes.filter((d) => {\n      const text = (d.id + ' ' + d.name + ' ' + d.nameHindi).toLowerCase();\n      const categories = d.category.map(c => c.toLowerCase());\n      const hasCategory = (name: string) => categories.includes(name.toLowerCase());\n      switch (slot) {\n        case 'dal': return hasCategory('Dal & Soups');\n        case 'sabzi': return hasCategory('Main Course') && !/biryani|rice|pulao|khichdi/.test(text);\n        case 'rice': return /rice|pulao|khichdi|biryani/.test(text);\n        case 'roti': return /roti|paratha|thepla|bhakri|kulcha|naan/.test(text);\n        case 'salad': return /raita|salad/.test(text);\n        case 'chutney': return /chutney/.test(text) || hasCategory('Snacks & Chaat');\n        case 'sweet': return hasCategory('Healthy Desserts');\n        case 'drink': return hasCategory('Drinks & Raita') && !/raita|salad/.test(text);\n        default: return true;\n      }\n    });\n  };\n
+  // Keep the master dish list intact, but show only dishes that belong to the selected thali slot.
+  const getDishesForSlot = (slot: ThaliSlotKey): Dish[] => {
+    return dishes.filter((d) => {
+      const text = `${d.id} ${d.name} ${d.nameHindi}`.toLowerCase();
+      const categories = d.category.map((c) => c.toLowerCase());
+      const hasCategory = (name: string) => categories.includes(name.toLowerCase());
+
+      switch (slot) {
+        case 'dal':
+          return hasCategory('Dal & Soups');
+        case 'sabzi':
+          return hasCategory('Main Course') &&
+            !/biryani|rice|pulao|khichdi|kulcha|roti|naan|paratha/.test(text);
+        case 'rice':
+          return hasCategory('Rotis & Grains') &&
+            /rice|pulao|khichdi|biryani/.test(text);
+        case 'roti':
+          return hasCategory('Rotis & Grains') &&
+            /roti|paratha|thepla|bhakri|kulcha|naan/.test(text);
+        case 'salad':
+          return /raita|salad/.test(text);
+        case 'chutney':
+          return /chutney/.test(text);
+        case 'sweet':
+          return hasCategory('Healthy Desserts');
+        case 'drink':
+          return hasCategory('Drinks & Raita') && !/raita|salad/.test(text);
+        default:
+          return true;
+      }
+    });
+  };
+
   const handleSelectDishForSlot = (dishId: string) => {
     if (activeSlotModal) {
       setCurrentThali(prev => ({
