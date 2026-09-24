@@ -310,7 +310,7 @@ export const ThaliBuilderPage: React.FC = () => {
               return (
                 <div
                   key={slotKey}
-                  onClick={() => setActiveSlotModal(slotKey)}
+                  onClick={() => { setActiveSlotModal(slotKey); setSlotSearch(''); }}
                   className="flex items-center justify-between p-3 rounded-2xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 hover:border-[#E8620C] cursor-pointer transition-colors"
                 >
                   <div className="flex items-center gap-3">
