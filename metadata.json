@@ -1,0 +1,6 @@
+{
+  "name": "Bharat Ki Thali 2.0",
+  "description": "Discover India, One Dish at a Time — Premium Indian food discovery, 60+ authentic regional recipes, AI Chef, Thali builder, meal planner, shopping list and offline PWA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
