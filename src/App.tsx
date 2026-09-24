@@ -25,7 +25,7 @@ const AppContent: React.FC = () => {
       <Navbar />
 
       {/* Main Page Content */}
-      <main className="pb-16 lg:pb-8">
+      <main className="pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-8">
         {activePage === 'home' && <HomePage />}
         {activePage === 'explore' && <ExplorePage />}
         {activePage === 'regions' && <RegionsPage />}
