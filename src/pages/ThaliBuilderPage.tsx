@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { ThaliSlotKey, ThaliSelection, Dish } from '../types';
+import { getCompatibleDishes, getPrimaryFoodCategory, getSlotLabel } from '../services/foodTaxonomy';
 
 export const ThaliBuilderPage: React.FC = () => {
   const { 
@@ -56,6 +57,8 @@ export const ThaliBuilderPage: React.FC = () => {
   const getDish = (dishId: string | undefined): Dish | undefined => {
     return dishId ? dishes.find(d => d.id === dishId) : undefined;
   };
+
+  const compatibleDishes = activeSlotModal ? getCompatibleDishes(dishes, activeSlotModal) : [];
 
   const handleSelectDishForSlot = (dishId: string) => {
     if (activeSlotModal) {
@@ -354,8 +357,11 @@ export const ThaliBuilderPage: React.FC = () => {
               </button>
             </div>
 
+            <div className="mb-3 rounded-xl bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900 px-3 py-2 text-xs text-stone-600 dark:text-stone-300">
+              <strong className="text-[#E8620C]">{compatibleDishes.length}</strong> {isHindi ? 'उपयुक्त व्यंजन मिले' : 'matching dishes found'} • {getSlotLabel(activeSlotModal)}
+            </div>
             <div className="overflow-y-auto space-y-2 flex-1 pr-1">
-              {dishes.map((d) => (
+              {compatibleDishes.map((d) => (
                 <div
                   key={d.id}
                   onClick={() => handleSelectDishForSlot(d.id)}
@@ -368,7 +374,7 @@ export const ThaliBuilderPage: React.FC = () => {
                         {d.name}
                       </h4>
                       <p className="text-xs text-stone-500">
-                        {d.nameHindi} • {d.totalTimeMinutes}m • {d.nutrition.calories} kcal
+                        {d.nameHindi} • {getPrimaryFoodCategory(d)} • {d.totalTimeMinutes}m • {d.nutrition.calories} kcal
                       </p>
                     </div>
                   </div>
@@ -377,6 +383,11 @@ export const ThaliBuilderPage: React.FC = () => {
                   </span>
                 </div>
               ))}
+              {compatibleDishes.length === 0 && (
+                <div className="py-10 text-center text-sm text-stone-500">
+                  {isHindi ? 'इस श्रेणी में अभी कोई व्यंजन उपलब्ध नहीं है।' : 'No dish is currently mapped to this category.'}
+                </div>
+              )}
             </div>
           </div>
         </div>
