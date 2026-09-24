@@ -1,4 +1,9 @@
 import { Dish, ShoppingItem, WeeklyMealPlan, SavedThali, UserPreferences } from '../types';
+import { allDishes } from '../data/dishes';
+
+const VALID_DISH_IDS = new Set(allDishes.map(d => d.id));
+const validDishId = (id: string | undefined): string | undefined =>
+  id && VALID_DISH_IDS.has(id) ? id : undefined;
 
 const STORAGE_KEYS = {
   FAVORITES: 'bkt_favorites_v2',
@@ -50,7 +55,12 @@ export const storageService = {
   getFavorites(): string[] {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.FAVORITES);
-      return data ? JSON.parse(data) : ['poha', 'rajma-masala', 'oats-idli'];
+      return data ? (JSON.parse(data) as SavedThali[]).map(thali => ({
+        ...thali,
+        items: Object.fromEntries(
+          Object.entries(thali.items || {}).map(([slot, dishId]) => [slot, validDishId(dishId as string)])
+        )
+      })) : ['poha', 'rajma-masala', 'oats-idli'];
     } catch {
       return [];
     }
@@ -154,7 +164,21 @@ export const storageService = {
   getMealPlan(): WeeklyMealPlan {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.MEAL_PLAN);
-      return data ? JSON.parse(data) : DEFAULT_MEAL_PLAN;
+      if (!data) return DEFAULT_MEAL_PLAN;
+
+      const stored = JSON.parse(data) as WeeklyMealPlan;
+      const clean: WeeklyMealPlan = { ...DEFAULT_MEAL_PLAN };
+
+      (Object.keys(clean) as (keyof WeeklyMealPlan)[]).forEach(day => {
+        const source = stored?.[day] || {};
+        clean[day] = {
+          breakfast: validDishId(source.breakfast) ?? DEFAULT_MEAL_PLAN[day].breakfast,
+          lunch: validDishId(source.lunch) ?? DEFAULT_MEAL_PLAN[day].lunch,
+          dinner: validDishId(source.dinner) ?? DEFAULT_MEAL_PLAN[day].dinner,
+        };
+      });
+
+      return clean;
     } catch {
       return DEFAULT_MEAL_PLAN;
     }
@@ -233,7 +257,7 @@ export const storageService = {
   importData(jsonString: string): boolean {
     try {
       const data = JSON.parse(jsonString);
-      if (data.favorites) this.saveFavorites(data.favorites);
+      if (data.favorites) this.saveFavorites(data.favorites.filter((id: string) => VALID_DISH_IDS.has(id)));
       if (data.shoppingList) this.saveShoppingList(data.shoppingList);
       if (data.mealPlan) this.saveMealPlan(data.mealPlan);
       if (data.savedThalis) this.saveSavedThalis(data.savedThalis);
