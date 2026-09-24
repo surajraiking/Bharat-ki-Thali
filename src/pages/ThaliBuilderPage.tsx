@@ -29,13 +29,13 @@ export const ThaliBuilderPage: React.FC = () => {
   const isHindi = settings.language === 'hi';
 
   const [currentThali, setCurrentThali] = useState<ThaliSelection>({
-    dal: 'rajma',
-    sabzi: 'aloo-gobi',
-    rice: 'vegetable-pulao',
-    roti: 'thepla',
-    salad: 'cucumber-raita',
-    chutney: 'khandvi',
-    sweet: 'kheer',
+    dal: 'rajma-masala',
+    sabzi: 'bhindi-masala',
+    rice: 'lemon-rice',
+    roti: 'methi-thepla',
+    salad: 'cucumber-mint-raita',
+    chutney: 'khaman-dhokla',
+    sweet: 'makhana-kheer',
     drink: 'masala-chaas'
   });
 
@@ -57,6 +57,7 @@ export const ThaliBuilderPage: React.FC = () => {
     return dishId ? dishes.find(d => d.id === dishId) : undefined;
   };
 
+  // The master list stays intact; the picker is filtered only to the selected bowl.\n  const getDishesForSlot = (slot: ThaliSlotKey): Dish[] => {\n    return dishes.filter((d) => {\n      const text = (d.id + ' ' + d.name + ' ' + d.nameHindi).toLowerCase();\n      const categories = d.category.map(c => c.toLowerCase());\n      const hasCategory = (name: string) => categories.includes(name.toLowerCase());\n      switch (slot) {\n        case 'dal': return hasCategory('Dal & Soups');\n        case 'sabzi': return hasCategory('Main Course') && !/biryani|rice|pulao|khichdi/.test(text);\n        case 'rice': return /rice|pulao|khichdi|biryani/.test(text);\n        case 'roti': return /roti|paratha|thepla|bhakri|kulcha|naan/.test(text);\n        case 'salad': return /raita|salad/.test(text);\n        case 'chutney': return /chutney/.test(text) || hasCategory('Snacks & Chaat');\n        case 'sweet': return hasCategory('Healthy Desserts');\n        case 'drink': return hasCategory('Drinks & Raita') && !/raita|salad/.test(text);\n        default: return true;\n      }\n    });\n  };\n
   const handleSelectDishForSlot = (dishId: string) => {
     if (activeSlotModal) {
       setCurrentThali(prev => ({
@@ -148,13 +149,13 @@ export const ThaliBuilderPage: React.FC = () => {
         <span className="text-xs font-semibold text-stone-400 whitespace-nowrap">Presets:</span>
         <button
           onClick={() => applyPreset({
-            dal: 'rajma',
-            sabzi: 'aloo-gobi',
-            rice: 'vegetable-pulao',
+            dal: 'rajma-masala',
+            sabzi: 'bhindi-masala',
+            rice: 'lemon-rice',
             roti: 'amritsari-kulcha',
-            salad: 'cucumber-raita',
-            chutney: 'masala-chaas',
-            sweet: 'kheer',
+            salad: 'cucumber-mint-raita',
+            chutney: 'khaman-dhokla',
+            sweet: 'makhana-kheer',
             drink: 'masala-chaas'
           }, 'Punjabi Royal Feast')}
           className="px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:border-[#E8620C] border border-transparent text-stone-800 dark:text-stone-200 text-xs font-semibold whitespace-nowrap"
@@ -164,13 +165,13 @@ export const ThaliBuilderPage: React.FC = () => {
 
         <button
           onClick={() => applyPreset({
-            dal: 'tadka-dal',
+            dal: 'dal-tadka',
             sabzi: 'gujarati-undhiyu',
-            rice: 'khichdi',
-            roti: 'thepla',
-            salad: 'cucumber-raita',
-            chutney: 'khandvi',
-            sweet: 'gajar-halwa',
+            rice: 'moong-dal-khichdi',
+            roti: 'methi-thepla',
+            salad: 'cucumber-mint-raita',
+            chutney: 'khaman-dhokla',
+            sweet: 'healthy-gajar-halwa',
             drink: 'masala-chaas'
           }, 'Gujarati Winter Thali')}
           className="px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:border-[#E8620C] border border-transparent text-stone-800 dark:text-stone-200 text-xs font-semibold whitespace-nowrap"
@@ -180,13 +181,13 @@ export const ThaliBuilderPage: React.FC = () => {
 
         <button
           onClick={() => applyPreset({
-            dal: 'sambar',
-            sabzi: 'avial',
+            dal: 'south-indian-sambar',
+            sabzi: 'kerala-avial',
             rice: 'curd-rice',
-            roti: 'appam',
-            salad: 'cucumber-raita',
-            chutney: 'tomato-rasam',
-            sweet: 'pongal',
+            roti: 'amritsari-kulcha',
+            salad: 'cucumber-mint-raita',
+            chutney: 'khaman-dhokla',
+            sweet: 'ven-pongal',
             drink: 'masala-chaas'
           }, 'South Indian Sadya Thali')}
           className="px-3 py-1.5 rounded-xl bg-stone-100 dark:bg-stone-800 hover:border-[#E8620C] border border-transparent text-stone-800 dark:text-stone-200 text-xs font-semibold whitespace-nowrap"
@@ -355,7 +356,7 @@ export const ThaliBuilderPage: React.FC = () => {
             </div>
 
             <div className="overflow-y-auto space-y-2 flex-1 pr-1">
-              {dishes.map((d) => (
+              {getDishesForSlot(activeSlotModal).map((d) => (
                 <div
                   key={d.id}
                   onClick={() => handleSelectDishForSlot(d.id)}
