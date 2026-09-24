@@ -63,20 +63,11 @@ jobs:
           s = p.read_text()
           s = s.replace(
               'Object.values(currentThali).forEach(dishId => {',
-              'Object.values(currentThali) as (string | undefined)[]).forEach(dishId => {'
+              '(Object.values(currentThali) as (string | undefined)[]).forEach(dishId => {'
           )
           s = s.replace(
               'Object.values(currentThali).reduce((acc, dishId) => {',
-              '((Object.values(currentThali) as (string | undefined)[]).reduce((acc, dishId) => {'
-          )
-          # Balance the extra opening parenthesis introduced for the two reducers.
-          s = s.replace(
-              '  }, 0);\n\n  const totalProtein = ((Object.values(currentThali) as (string | undefined)[]).reduce',
-              '  }, 0));\n\n  const totalProtein = ((Object.values(currentThali) as (string | undefined)[]).reduce'
-          )
-          s = s.replace(
-              '  }, 0);\n\n  return (',
-              '  }, 0));\n\n  return ('
+              '(Object.values(currentThali) as (string | undefined)[]).reduce((acc, dishId) => {'
           )
           p.write_text(s)
           PY
