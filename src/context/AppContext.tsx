@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Dish, ShoppingItem, WeeklyMealPlan, SavedThali, UserPreferences, FilterState } from '../types';
 import { allDishes } from '../data/dishes';
 import { additionalDishes } from '../data/additionalDishes';
+import { globalFoodCatalog } from '../data/globalFoodCatalog';
 import { storageService } from '../services/storage';
 
 export type AppPage = 'home' | 'explore' | 'regions' | 'meal-planner' | 'thali-builder' | 'shopping-list' | 'ai-chef' | 'favorites' | 'settings';
@@ -14,7 +15,9 @@ interface AppContextType {
   savedThalis: SavedThali[]; saveThali: (name: string, items: any) => void; deleteThali: (id: string) => void; settings: UserPreferences; updateSettings: (newSettings: Partial<UserPreferences>) => void;
   filters: FilterState; setFilters: React.Dispatch<React.SetStateAction<FilterState>>; resetFilters: () => void; setQuickSearch: (query: string) => void; setQuickFilter: (key: keyof FilterState, value: any) => void; toastMessage: string | null; showToast: (msg: string) => void;
 }
-const catalogDishes: Dish[] = [...allDishes, ...additionalDishes];
+
+// Keep every existing dish and append the global starter catalog. IDs are unique by design.
+const catalogDishes: Dish[] = Array.from(new Map([...allDishes, ...additionalDishes, ...globalFoodCatalog].map(d => [d.id, d])).values());
 const defaultFilters: FilterState = { searchQuery: '', mealType: 'All', diet: 'All', difficulty: 'All', maxTime: 'All', region: 'All', state: 'All', healthTag: 'All', festival: 'All', category: 'All', sortBy: 'relevance' };
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -43,13 +46,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [settings.theme]);
 
   const showToast = (msg: string) => { setToastMessage(msg); setTimeout(() => setToastMessage(prev => prev === msg ? null : prev), 3000); };
-  const toggleFavorite = (dishId: string) => {
-    const exists = favorites.includes(dishId);
-    const next = exists ? favorites.filter(id => id !== dishId) : [...favorites, dishId];
-    storageService.saveFavorites(next);
-    setFavorites(next);
-    showToast(exists ? 'Removed from Favorites' : '❤️ Added to Favorites');
-  };
+  const toggleFavorite = (dishId: string) => { const exists = favorites.includes(dishId); const next = exists ? favorites.filter(id => id !== dishId) : [...favorites, dishId]; storageService.saveFavorites(next); setFavorites(next); showToast(exists ? 'Removed from Favorites' : '❤️ Added to Favorites'); };
   const isFavorite = (dishId: string) => favorites.includes(dishId);
   const viewDish = (dish: Dish) => { storageService.addRecentlyViewed(dish.id); setRecentlyViewed(storageService.getRecentlyViewed().filter(id => catalogDishes.some(d => d.id === id))); setSelectedDish(dish); };
   const clearRecentlyViewed = () => { storageService.clearRecentlyViewed(); setRecentlyViewed([]); showToast('Recently viewed cleared'); };
@@ -71,4 +68,4 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return <AppContext.Provider value={{ activePage, setActivePage, selectedDish, setSelectedDish, cookingDish, setCookingDish, isApkModalOpen, setIsApkModalOpen, isSurpriseModalOpen, setIsSurpriseModalOpen, dishes: catalogDishes, favorites, toggleFavorite, isFavorite, recentlyViewed, viewDish, clearRecentlyViewed, shoppingList, addToShoppingList, addCustomShoppingItem, toggleShoppingItem, deleteShoppingItem, clearPurchasedShoppingItems, clearAllShoppingItems, mealPlan, setMealPlan, updateMealPlanSlot, generateShoppingListFromMealPlan, savedThalis, saveThali, deleteThali, settings, updateSettings, filters, setFilters, resetFilters, setQuickSearch, setQuickFilter, toastMessage, showToast }}>{children}</AppContext.Provider>;
 };
-export const useApp = () => { const context = useContext(AppContext); if (!context) throw new Error('useApp must be used within an AppProvider'); return context; };
+export const useApp = () => { const context = useContext(AppContext); if (!context) throw new Error('useApp must be used within AppProvider'); return context; };
