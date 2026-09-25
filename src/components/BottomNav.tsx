@@ -1,5 +1,5 @@
 import React from 'react';
-import { UtensilsCrossed, Search, MapPin, Sparkles, Heart, CircleDot } from 'lucide-react';
+import { UtensilsCrossed, Search, MapPin, Sparkles, Heart, CircleDot, MoreHorizontal } from 'lucide-react';
 import { useApp, AppPage } from '../context/AppContext';
 
 export const BottomNav: React.FC = () => {
