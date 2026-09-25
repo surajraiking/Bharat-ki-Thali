@@ -5,26 +5,16 @@ import { additionalDishes } from '../data/additionalDishes';
 import { storageService } from '../services/storage';
 
 export type AppPage = 'home' | 'explore' | 'regions' | 'meal-planner' | 'thali-builder' | 'shopping-list' | 'ai-chef' | 'favorites' | 'settings';
-
 interface AppContextType {
-  activePage: AppPage; setActivePage: (page: AppPage) => void;
-  selectedDish: Dish | null; setSelectedDish: (dish: Dish | null) => void;
-  cookingDish: Dish | null; setCookingDish: (dish: Dish | null) => void;
-  isApkModalOpen: boolean; setIsApkModalOpen: (open: boolean) => void;
-  isSurpriseModalOpen: boolean; setIsSurpriseModalOpen: (open: boolean) => void;
-  dishes: Dish[]; favorites: string[]; toggleFavorite: (dishId: string) => void; isFavorite: (dishId: string) => boolean;
-  recentlyViewed: string[]; viewDish: (dish: Dish) => void; clearRecentlyViewed: () => void;
-  shoppingList: ShoppingItem[]; addToShoppingList: (dish: Dish, servingsScale?: number) => void; addCustomShoppingItem: (name: string, quantity: number, unit: string) => void;
-  toggleShoppingItem: (id: string) => void; deleteShoppingItem: (id: string) => void; clearPurchasedShoppingItems: () => void; clearAllShoppingItems: () => void;
+  activePage: AppPage; setActivePage: (page: AppPage) => void; selectedDish: Dish | null; setSelectedDish: (dish: Dish | null) => void; cookingDish: Dish | null; setCookingDish: (dish: Dish | null) => void;
+  isApkModalOpen: boolean; setIsApkModalOpen: (open: boolean) => void; isSurpriseModalOpen: boolean; setIsSurpriseModalOpen: (open: boolean) => void;
+  dishes: Dish[]; favorites: string[]; toggleFavorite: (dishId: string) => void; isFavorite: (dishId: string) => boolean; recentlyViewed: string[]; viewDish: (dish: Dish) => void; clearRecentlyViewed: () => void;
+  shoppingList: ShoppingItem[]; addToShoppingList: (dish: Dish, servingsScale?: number) => void; addCustomShoppingItem: (name: string, quantity: number, unit: string) => void; toggleShoppingItem: (id: string) => void; deleteShoppingItem: (id: string) => void; clearPurchasedShoppingItems: () => void; clearAllShoppingItems: () => void;
   mealPlan: WeeklyMealPlan; setMealPlan: (plan: WeeklyMealPlan) => void; updateMealPlanSlot: (day: keyof WeeklyMealPlan, slot: 'breakfast' | 'lunch' | 'dinner', dishId: string | undefined) => void; generateShoppingListFromMealPlan: () => void;
-  savedThalis: SavedThali[]; saveThali: (name: string, items: any) => void; deleteThali: (id: string) => void;
-  settings: UserPreferences; updateSettings: (newSettings: Partial<UserPreferences>) => void;
-  filters: FilterState; setFilters: React.Dispatch<React.SetStateAction<FilterState>>; resetFilters: () => void; setQuickSearch: (query: string) => void; setQuickFilter: (key: keyof FilterState, value: any) => void;
-  toastMessage: string | null; showToast: (msg: string) => void;
+  savedThalis: SavedThali[]; saveThali: (name: string, items: any) => void; deleteThali: (id: string) => void; settings: UserPreferences; updateSettings: (newSettings: Partial<UserPreferences>) => void;
+  filters: FilterState; setFilters: React.Dispatch<React.SetStateAction<FilterState>>; resetFilters: () => void; setQuickSearch: (query: string) => void; setQuickFilter: (key: keyof FilterState, value: any) => void; toastMessage: string | null; showToast: (msg: string) => void;
 }
-
 const catalogDishes: Dish[] = [...allDishes, ...additionalDishes];
-
 const defaultFilters: FilterState = { searchQuery: '', mealType: 'All', diet: 'All', difficulty: 'All', maxTime: 'All', region: 'All', state: 'All', healthTag: 'All', festival: 'All', category: 'All', sortBy: 'relevance' };
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -35,8 +25,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isApkModalOpen, setIsApkModalOpen] = useState(false);
   const [isSurpriseModalOpen, setIsSurpriseModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [favorites, setFavorites] = useState<string[]>(() => storageService.getFavorites());
-  const [recentlyViewed, setRecentlyViewed] = useState<string[]>(() => storageService.getRecentlyViewed());
+  const sanitizeFavorites = () => {
+    const raw = storageService.getFavorites();
+    return Array.isArray(raw) ? raw.filter((item): item is string => typeof item === 'string' && catalogDishes.some(d => d.id === item)) : [];
+  };
+  const [favorites, setFavorites] = useState<string[]>(sanitizeFavorites);
+  const [recentlyViewed, setRecentlyViewed] = useState<string[]>(() => storageService.getRecentlyViewed().filter(id => catalogDishes.some(d => d.id === id)));
   const [shoppingList, setShoppingList] = useState<ShoppingItem[]>(() => storageService.getShoppingList());
   const [mealPlan, setMealPlanState] = useState<WeeklyMealPlan>(() => storageService.getMealPlan());
   const [savedThalis, setSavedThalis] = useState<SavedThali[]>(() => storageService.getSavedThalis());
@@ -49,9 +43,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [settings.theme]);
 
   const showToast = (msg: string) => { setToastMessage(msg); setTimeout(() => setToastMessage(prev => prev === msg ? null : prev), 3000); };
-  const toggleFavorite = (dishId: string) => { const isFav = storageService.toggleFavorite(dishId); setFavorites(storageService.getFavorites()); showToast(isFav ? '❤️ Added to Favorites' : 'Removed from Favorites'); };
+  const toggleFavorite = (dishId: string) => {
+    const exists = favorites.includes(dishId);
+    const next = exists ? favorites.filter(id => id !== dishId) : [...favorites, dishId];
+    storageService.saveFavorites(next);
+    setFavorites(next);
+    showToast(exists ? 'Removed from Favorites' : '❤️ Added to Favorites');
+  };
   const isFavorite = (dishId: string) => favorites.includes(dishId);
-  const viewDish = (dish: Dish) => { storageService.addRecentlyViewed(dish.id); setRecentlyViewed(storageService.getRecentlyViewed()); setSelectedDish(dish); };
+  const viewDish = (dish: Dish) => { storageService.addRecentlyViewed(dish.id); setRecentlyViewed(storageService.getRecentlyViewed().filter(id => catalogDishes.some(d => d.id === id))); setSelectedDish(dish); };
   const clearRecentlyViewed = () => { storageService.clearRecentlyViewed(); setRecentlyViewed([]); showToast('Recently viewed cleared'); };
   const addToShoppingList = (dish: Dish, servingsScale = 1) => { storageService.addIngredientsToShoppingList(dish, servingsScale); setShoppingList(storageService.getShoppingList()); showToast(`🛒 Added ingredients for ${dish.name} to Shopping List`); };
   const addCustomShoppingItem = (name: string, quantity: number, unit: string) => { const current = [...shoppingList, { id: `shop-${Date.now()}`, name, quantity, unit, purchased: false, category: 'Custom Items' }]; storageService.saveShoppingList(current); setShoppingList(current); showToast(`Added "${name}" to Shopping List`); };
@@ -61,7 +61,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const clearAllShoppingItems = () => { storageService.saveShoppingList([]); setShoppingList([]); showToast('Shopping list emptied'); };
   const setMealPlan = (plan: WeeklyMealPlan) => { storageService.saveMealPlan(plan); setMealPlanState(plan); };
   const updateMealPlanSlot = (day: keyof WeeklyMealPlan, slot: 'breakfast' | 'lunch' | 'dinner', dishId: string | undefined) => { const updated = { ...mealPlan, [day]: { ...mealPlan[day], [slot]: dishId } }; setMealPlan(updated); showToast(`Updated ${day.toUpperCase()} ${slot}`); };
-  const generateShoppingListFromMealPlan = () => { const dishIds: string[] = []; Object.values(mealPlan).forEach(day => { if (day.breakfast) dishIds.push(day.breakfast); if (day.lunch) dishIds.push(day.lunch); if (day.dinner) dishIds.push(day.dinner); }); const uniqueDishIds = Array.from(new Set(dishIds)); uniqueDishIds.forEach(id => { const found = catalogDishes.find(d => d.id === id); if (found) storageService.addIngredientsToShoppingList(found, 1); }); setShoppingList(storageService.getShoppingList()); showToast(`🛒 Generated shopping list for ${uniqueDishIds.length} planned meals!`); };
+  const generateShoppingListFromMealPlan = () => { const ids: string[] = []; Object.values(mealPlan).forEach(day => { if (day.breakfast) ids.push(day.breakfast); if (day.lunch) ids.push(day.lunch); if (day.dinner) ids.push(day.dinner); }); const unique = Array.from(new Set(ids)); unique.forEach(id => { const found = catalogDishes.find(d => d.id === id); if (found) storageService.addIngredientsToShoppingList(found, 1); }); setShoppingList(storageService.getShoppingList()); showToast(`🛒 Generated shopping list for ${unique.length} planned meals!`); };
   const saveThali = (name: string, items: any) => { const current = [...savedThalis]; current.unshift({ id: `thali-${Date.now()}`, name, items, createdAt: Date.now() }); storageService.saveSavedThalis(current); setSavedThalis(current); showToast(`Thali "${name}" saved!`); };
   const deleteThali = (id: string) => { const current = savedThalis.filter(t => t.id !== id); storageService.saveSavedThalis(current); setSavedThalis(current); showToast('Thali removed'); };
   const updateSettings = (newSettings: Partial<UserPreferences>) => { const updated = { ...settings, ...newSettings }; storageService.saveSettings(updated); setSettings(updated); };
@@ -71,5 +71,4 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return <AppContext.Provider value={{ activePage, setActivePage, selectedDish, setSelectedDish, cookingDish, setCookingDish, isApkModalOpen, setIsApkModalOpen, isSurpriseModalOpen, setIsSurpriseModalOpen, dishes: catalogDishes, favorites, toggleFavorite, isFavorite, recentlyViewed, viewDish, clearRecentlyViewed, shoppingList, addToShoppingList, addCustomShoppingItem, toggleShoppingItem, deleteShoppingItem, clearPurchasedShoppingItems, clearAllShoppingItems, mealPlan, setMealPlan, updateMealPlanSlot, generateShoppingListFromMealPlan, savedThalis, saveThali, deleteThali, settings, updateSettings, filters, setFilters, resetFilters, setQuickSearch, setQuickFilter, toastMessage, showToast }}>{children}</AppContext.Provider>;
 };
-
 export const useApp = () => { const context = useContext(AppContext); if (!context) throw new Error('useApp must be used within an AppProvider'); return context; };
