@@ -16,7 +16,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ dish, showAddShopping = 
   return (
     <article
       onClick={() => viewDish(dish)}
-      className="group relative bg-white dark:bg-[#251D16] rounded-3xl overflow-hidden border border-stone-200/80 dark:border-stone-800 shadow-[0_8px_25px_rgba(65,42,20,0.10)] hover:shadow-[0_22px_45px_rgba(65,42,20,0.22)] hover:-translate-y-2 hover:[transform:perspective(1000px)_rotateX(1deg)] transition-all duration-500 cursor-pointer flex flex-col justify-between [transform-style:preserve-3d]"
+      className="group relative bg-white dark:bg-[#251D16] rounded-3xl overflow-hidden border border-stone-200/80 dark:border-stone-800 shadow-[0_8px_25px_rgba(65,42,20,0.10)] hover:shadow-[0_22px_45px_rgba(65,42,20,0.22)] hover:-translate-y-2 hover:[transform:perspective(1000px)_rotateX(2deg)_translateY(-8px)] active:scale-[0.985] transition-all duration-500 cursor-pointer flex flex-col justify-between [transform-style:preserve-3d]"
     >
       <div className="absolute inset-x-6 top-0 h-1 rounded-b-full bg-gradient-to-r from-amber-300 via-orange-500 to-rose-500 opacity-70 group-hover:opacity-100 transition-opacity" />
       <div>
