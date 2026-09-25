@@ -1,0 +1,12 @@
+{
+  "appId": "com.surajrai.bharatkithali",
+  "appName": "Bharat Ki Thali",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
