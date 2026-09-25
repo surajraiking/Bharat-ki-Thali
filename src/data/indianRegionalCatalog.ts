@@ -4,6 +4,7 @@ type Seed = Omit<Dish, 'ingredients' | 'steps'> & {
   ingredients: [string, number, string][];
   steps: [string, string, number][];
 };
+type RegionalSeed = [string, string, string, string, string, ThaliSlotKey | 'none'];
 
 const img = 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=900&auto=format&fit=crop&q=85';
 
@@ -23,7 +24,7 @@ const base = (d: Partial<Seed> & Pick<Seed, 'id'|'name'|'nameHindi'|'description
   ...d,
 });
 
-const indianRegionalSeeds: Seed[] = [
+const indianRegionalSeeds: RegionalSeed[] = [
   ['Andhra Pradesh','Gongura Pachadi','గోంగూర పచ్చడి','Tangy sorrel-leaf chutney with chilli and spices.','Chutney','chutney'],
   ['Andhra Pradesh','Pesarattu','పెసరట్టు','Green gram crepe traditionally served for breakfast.','Breakfast','roti'],
   ['Andhra Pradesh','Pulihora','పులిహోర','Tamarind-seasoned rice with peanuts and tempering.','Rice','rice'],
@@ -96,10 +97,6 @@ const indianRegionalSeeds: Seed[] = [
   ['Lakshadweep','Tuna Coconut Curry','टूना नारियल करी','Island-style tuna curry with coconut and spices.','Main Course','sabzi'],
 ];
 
-const slotMap: Record<string, ThaliSlotKey> = {
-  chutney:'chutney', roti:'roti', rice:'rice', sabzi:'sabzi', dal:'dal', sweet:'sweet'
-};
-
 export const indianRegionalCatalog: Dish[] = indianRegionalSeeds.map(([state,name,nameHindi,description,category,slot], index) => {
   const id = `regional-${state.toLowerCase().replace(/[^a-z]+/g,'-')}-${name.toLowerCase().replace(/[^a-z]+/g,'-')}-${index+1}`;
   const mealTypes: MealType[] = category === 'Breakfast' ? ['Breakfast'] : category === 'Sweets' ? ['Dessert'] : category === 'Snack' || category === 'Street Food' ? ['Snack'] : ['Lunch','Dinner'];
@@ -112,7 +109,7 @@ export const indianRegionalCatalog: Dish[] = indianRegionalSeeds.map(([state,nam
       ['Goa','Gujarat','Maharashtra','Dadra and Nagar Haveli and Daman and Diu','Lakshadweep'].includes(state) ? 'West India' :
       ['Chhattisgarh','Madhya Pradesh'].includes(state) ? 'Central India' : 'North India',
     cuisine: [state + ' Cuisine', 'Indian Regional'], category: [category], mealTypes,
-    diet: [vegetarian ? 'Vegetarian' : 'Non-Veg'], thaliSlots: slotMap[slot] ? [slotMap[slot]] : undefined,
+    diet: [vegetarian ? 'Vegetarian' : 'Non-Veg'], thaliSlots: slot !== 'none' ? [slot] : undefined,
     ingredients: [['Regional staple',1,'cup'],['Onion or aromatics',1,'medium'],['Spice blend',1,'tbsp'],['Salt',0.75,'tsp']],
     steps: [['Prepare ingredients','Wash, chop or soak the ingredients as required.',8],['Cook','Cook using the traditional-style method until tender and aromatic.',20],['Serve','Adjust seasoning and serve with the customary accompaniment.',5]],
     tags: ['State Speciality', state, 'Regional Cuisine'], emoji: '🍛'
