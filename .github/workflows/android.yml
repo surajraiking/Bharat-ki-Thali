@@ -3,6 +3,7 @@ name: Bharat Ki Thali Android
 on:
   workflow_dispatch:
   push:
+    branches: [main]
     tags:
       - 'android-v*'
 
