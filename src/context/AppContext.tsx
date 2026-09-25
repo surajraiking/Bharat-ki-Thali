@@ -3,6 +3,7 @@ import { Dish, ShoppingItem, WeeklyMealPlan, SavedThali, UserPreferences, Filter
 import { allDishes } from '../data/dishes';
 import { additionalDishes } from '../data/additionalDishes';
 import { globalFoodCatalog } from '../data/globalFoodCatalog';
+import { indianRegionalCatalog } from '../data/indianRegionalCatalog';
 import { storageService } from '../services/storage';
 
 export type AppPage = 'home' | 'explore' | 'regions' | 'meal-planner' | 'thali-builder' | 'shopping-list' | 'ai-chef' | 'favorites' | 'settings';
@@ -17,7 +18,7 @@ interface AppContextType {
 }
 
 // Keep every existing dish and append the global starter catalog. IDs are unique by design.
-const catalogDishes: Dish[] = Array.from(new Map([...allDishes, ...additionalDishes, ...globalFoodCatalog].map(d => [d.id, d])).values());
+const catalogDishes: Dish[] = Array.from(new Map([...allDishes, ...additionalDishes, ...globalFoodCatalog, ...indianRegionalCatalog].map(d => [d.id, d])).values());
 const defaultFilters: FilterState = { searchQuery: '', mealType: 'All', diet: 'All', difficulty: 'All', maxTime: 'All', region: 'All', state: 'All', healthTag: 'All', festival: 'All', category: 'All', sortBy: 'relevance' };
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
