@@ -1,4 +1,4 @@
-import { Dish, ThaliSlotKey } from '../types';
+import { Dish, MealType, ThaliSlotKey } from '../types';
 
 type Seed = Omit<Dish, 'ingredients' | 'steps'> & {
   ingredients: [string, number, string][];
@@ -102,7 +102,7 @@ const slotMap: Record<string, ThaliSlotKey> = {
 
 export const indianRegionalCatalog: Dish[] = indianRegionalSeeds.map(([state,name,nameHindi,description,category,slot], index) => {
   const id = `regional-${state.toLowerCase().replace(/[^a-z]+/g,'-')}-${name.toLowerCase().replace(/[^a-z]+/g,'-')}-${index+1}`;
-  const mealTypes = category === 'Breakfast' ? ['Breakfast'] : category === 'Sweets' ? ['Dessert'] : category === 'Snack' || category === 'Street Food' ? ['Snack'] : ['Lunch','Dinner'];
+  const mealTypes: MealType[] = category === 'Breakfast' ? ['Breakfast'] : category === 'Sweets' ? ['Dessert'] : category === 'Snack' || category === 'Street Food' ? ['Snack'] : ['Lunch','Dinner'];
   const vegetarian = !/fish|prawn|mutton|meat|chicken|tuna|ilish|haleem|axone/i.test(name + ' ' + description);
   return make(base({
     id, name, nameHindi, description, descriptionHindi: description, state,
@@ -111,7 +111,7 @@ export const indianRegionalCatalog: Dish[] = indianRegionalSeeds.map(([state,nam
       ['West Bengal','Odisha','Bihar','Jharkhand'].includes(state) ? 'East India' :
       ['Goa','Gujarat','Maharashtra','Dadra and Nagar Haveli and Daman and Diu','Lakshadweep'].includes(state) ? 'West India' :
       ['Chhattisgarh','Madhya Pradesh'].includes(state) ? 'Central India' : 'North India',
-    cuisine: [state + ' Cuisine', 'Indian Regional'], category: [category], mealTypes: mealTypes as any,
+    cuisine: [state + ' Cuisine', 'Indian Regional'], category: [category], mealTypes,
     diet: [vegetarian ? 'Vegetarian' : 'Non-Veg'], thaliSlots: slotMap[slot] ? [slotMap[slot]] : undefined,
     ingredients: [['Regional staple',1,'cup'],['Onion or aromatics',1,'medium'],['Spice blend',1,'tbsp'],['Salt',0.75,'tsp']],
     steps: [['Prepare ingredients','Wash, chop or soak the ingredients as required.',8],['Cook','Cook using the traditional-style method until tender and aromatic.',20],['Serve','Adjust seasoning and serve with the customary accompaniment.',5]],
