@@ -13,7 +13,7 @@ export interface Dish {
   region:GlobalRegion|string; state:string; country?:string; cuisine:string[]; category:string[]; mealTypes:MealType[]; diet:DietType[];
   ingredients:Ingredient[]; steps:RecipeStep[]; prepTimeMinutes:number; cookTimeMinutes:number; totalTimeMinutes:number; servings:number;
   difficulty:DifficultyType; spiceLevel:SpiceLevel; nutrition:Nutrition; tips:string[]; precautions:string[]; allergens:string[]; festival:string[];
-  tags:string[]; popularity:number; emoji?:string; accentColor?:string; fayde?:DishBenefit[]; tasteProfile?:string; bestTimeToEat?:string; suitableFor?:string[];
+  tags:string[]; popularity:number; thaliSlots?: ThaliSlotKey[]; emoji?:string; accentColor?:string; fayde?:DishBenefit[]; tasteProfile?:string; bestTimeToEat?:string; suitableFor?:string[];
 }
 export type SortOption = 'relevance' | 'popular' | 'quickest' | 'caloriesLow' | 'proteinHigh';
 export interface FilterState { searchQuery:string; mealType:MealType|'All'; diet:DietType|'All'; difficulty:DifficultyType|'All'; maxTime:number|'All'; region:string|'All'; state:string|'All'; healthTag:string|'All'; festival:string|'All'; category:string|'All'; sortBy:SortOption; }
