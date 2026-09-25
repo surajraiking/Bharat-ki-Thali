@@ -49,7 +49,7 @@ export const ThaliBuilderPage: React.FC = () => {
     rice: { en: 'Rice / Pulao', hi: 'चावल / पुलाव', icon: '🍚', defaultCat: 'Rotis & Grains' },
     roti: { en: 'Roti / Bread', hi: 'रोटी / ब्रेड', icon: '🫓', defaultCat: 'Rotis & Grains' },
     salad: { en: 'Salad / Raita', hi: 'सलाद / रायता', icon: '🥗', defaultCat: 'Drinks & Raita' },
-    chutney: { en: 'Chutney / Farsan', hi: 'चटनी / फरसाण', icon: '🥟', defaultCat: 'Snacks & Chaat' },
+    chutney: { en: 'Chutney / Pickle', hi: 'चटनी / अचार', icon: '🥣', defaultCat: 'Chutneys' },
     sweet: { en: 'Mithai / Sweet', hi: 'मिठाई', icon: '🍨', defaultCat: 'Healthy Desserts' },
     drink: { en: 'Beverage / Chaas', hi: 'पेय / छाछ', icon: '🥛', defaultCat: 'Drinks & Raita' }
   };
@@ -60,18 +60,21 @@ export const ThaliBuilderPage: React.FC = () => {
 
   // Prefer explicit thali slot metadata so every picker stays precise; keep a safe fallback for older recipes.
   const getDishesForSlot = (slot: ThaliSlotKey): Dish[] => {
-    const explicit = dishes.filter(d => d.thaliSlots?.includes(slot));
+    const indianRegions = new Set(['North India','South India','West India','East India','Northeast India','Central India','Pan India']);
+    const isIndianDish = (d: Dish) => d.country === 'India' || indianRegions.has(d.region as string) || d.cuisine.some(c => /indian/i.test(c));
+    const explicit = dishes.filter(d => isIndianDish(d) && d.thaliSlots?.includes(slot));
     const fallback = dishes.filter((d) => {
+      if (!isIndianDish(d)) return false;
       const text = `${d.id} ${d.name} ${d.nameHindi}`.toLowerCase();
       const categories = d.category.map(c => c.toLowerCase());
       const hasCategory = (name: string) => categories.includes(name.toLowerCase());
       switch (slot) {
         case 'dal': return hasCategory('Dal & Soups') || /\bdal\b|curry|sambar|rasam|kadhi/.test(text);
-        case 'sabzi': return (hasCategory('Main Course') || hasCategory('Vegetables') || hasCategory('Curries')) && !/biryani|rice|pulao|khichdi|kulcha|roti|naan|paratha|dal|soup/.test(text);
+        case 'sabzi': return (hasCategory('Main Course') || hasCategory('Vegetables') || hasCategory('Curries')) && !/biryani|rice|pulao|khichdi|kulcha|roti|naan|paratha|dal|soup|bhature|chole bhature/.test(text);
         case 'rice': return /rice|pulao|khichdi|biryani/.test(text) || hasCategory('Rice & Grains');
-        case 'roti': return /roti|paratha|thepla|bhakri|kulcha|naan|phulka|chapati|dosa/.test(text) || hasCategory('Breads') || hasCategory('Rotis & Grains');
+        case 'roti': return /roti|paratha|thepla|bhakri|kulcha|naan|phulka|chapati/.test(text) || hasCategory('Breads') || hasCategory('Rotis & Grains');
         case 'salad': return /raita|salad|kachumber/.test(text) || hasCategory('Salads') || hasCategory('Raita');
-        case 'chutney': return /chutney|achar|pickle|papad/.test(text) || hasCategory('Chutneys') || hasCategory('Sauces & Dips');
+        case 'chutney': return /chutney|achar|pickle/.test(text) || hasCategory('Chutneys') || hasCategory('Pickles');
         case 'sweet': return hasCategory('Healthy Desserts') || hasCategory('Sweets') || /sweet|halwa|kheer|ladoo|rasgulla|gulab jamun|barfi|peda/.test(text);
         case 'drink': return (hasCategory('Drinks & Raita') || hasCategory('Beverages')) && !/raita|salad/.test(text);
         default: return false;
