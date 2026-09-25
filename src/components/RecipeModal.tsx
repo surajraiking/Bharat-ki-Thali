@@ -75,9 +75,9 @@ export const RecipeModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] overflow-hidden bg-black/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
       <div 
-        className="relative w-full max-w-4xl bg-[#FFFDF9] dark:bg-[#1E1712] rounded-3xl shadow-2xl overflow-hidden border border-stone-200 dark:border-stone-800 max-h-[92vh] flex flex-col"
+        className="relative w-full max-w-4xl bg-[#FFFDF9] dark:bg-[#1E1712] rounded-3xl shadow-2xl overflow-hidden border border-stone-200 dark:border-stone-800 h-[100dvh] sm:h-[92vh] max-h-[100dvh] sm:max-h-[92vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Sticky Header with Action Buttons */}
@@ -110,7 +110,7 @@ export const RecipeModal: React.FC = () => {
         </div>
 
         {/* Scrollable Content */}
-        <div className="overflow-y-auto flex-1 pb-24">
+        <div className="overflow-y-auto flex-1 overscroll-contain pb-[calc(5rem+env(safe-area-inset-bottom))]">
           
           {/* Hero Banner */}
           <div className="relative aspect-[16/9] sm:aspect-[21/9] w-full overflow-hidden bg-stone-900">
