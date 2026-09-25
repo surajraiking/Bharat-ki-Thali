@@ -55,12 +55,10 @@ export const storageService = {
   getFavorites(): string[] {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.FAVORITES);
-      return data ? (JSON.parse(data) as SavedThali[]).map(thali => ({
-        ...thali,
-        items: Object.fromEntries(
-          Object.entries(thali.items || {}).map(([slot, dishId]) => [slot, validDishId(dishId as string)])
-        )
-      })) : ['poha', 'rajma-masala', 'oats-idli'];
+      if (!data) return ['poha', 'rajma-masala', 'oats-idli'];
+      const parsed = JSON.parse(data);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.filter((id): id is string => typeof id === 'string' && !!validDishId(id));
     } catch {
       return [];
     }
