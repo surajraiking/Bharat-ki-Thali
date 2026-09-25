@@ -25,7 +25,8 @@
     "express": "^4.21.2",
     "dotenv": "^17.2.3",
     "motion": "^12.23.24",
-    "@capacitor/core": "^7.4.4"
+    "@capacitor/core": "^7.4.4",
+    "@capacitor/android": "^7.4.4"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
