@@ -33,8 +33,8 @@ export const ThaliBuilderPage: React.FC = () => {
     sabzi: 'bhindi-masala',
     rice: 'lemon-rice',
     roti: 'methi-thepla',
-    salad: 'cucumber-mint-raita',
-    chutney: 'khaman-dhokla',
+    salad: 'kachumber-salad',
+    chutney: 'mint-coriander-chutney',
     sweet: 'makhana-kheer',
     drink: 'masala-chaas'
   });
@@ -174,8 +174,8 @@ export const ThaliBuilderPage: React.FC = () => {
             sabzi: 'bhindi-masala',
             rice: 'lemon-rice',
             roti: 'amritsari-kulcha',
-            salad: 'cucumber-mint-raita',
-            chutney: 'khaman-dhokla',
+            salad: 'kachumber-salad',
+            chutney: 'mint-coriander-chutney',
             sweet: 'makhana-kheer',
             drink: 'masala-chaas'
           }, 'Punjabi Royal Feast')}
@@ -190,8 +190,8 @@ export const ThaliBuilderPage: React.FC = () => {
             sabzi: 'gujarati-undhiyu',
             rice: 'moong-dal-khichdi',
             roti: 'methi-thepla',
-            salad: 'cucumber-mint-raita',
-            chutney: 'khaman-dhokla',
+            salad: 'kachumber-salad',
+            chutney: 'mint-coriander-chutney',
             sweet: 'healthy-gajar-halwa',
             drink: 'masala-chaas'
           }, 'Gujarati Winter Thali')}
@@ -206,8 +206,8 @@ export const ThaliBuilderPage: React.FC = () => {
             sabzi: 'kerala-avial',
             rice: 'curd-rice',
             roti: 'amritsari-kulcha',
-            salad: 'cucumber-mint-raita',
-            chutney: 'khaman-dhokla',
+            salad: 'kachumber-salad',
+            chutney: 'mint-coriander-chutney',
             sweet: 'ven-pongal',
             drink: 'masala-chaas'
           }, 'South Indian Sadya Thali')}
@@ -252,7 +252,7 @@ export const ThaliBuilderPage: React.FC = () => {
                   onClick={() => setActiveSlotModal(slotKey)}
                   className="absolute w-[68px] h-[68px] sm:w-[94px] sm:h-[94px] rounded-full bg-white dark:bg-stone-800 border-2 sm:border-3 border-amber-500/50 shadow-lg flex flex-col items-center justify-center p-1 text-center cursor-pointer hover:scale-110 hover:border-[#E8620C] transition-all group overflow-hidden"
                   style={{
-                    transform: `translate(${Math.cos(angle) * (window.innerWidth < 640 ? radius : radiusSm)}px, ${Math.sin(angle) * (window.innerWidth < 640 ? radius : radiusSm)}px)`
+                    transform: `translate(${Math.cos(angle) * radiusSm}px, ${Math.sin(angle) * radiusSm}px)`
                   }}
                 >
                   <span className="text-sm sm:text-lg">{meta.icon}</span>
