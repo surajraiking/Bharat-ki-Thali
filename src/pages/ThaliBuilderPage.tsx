@@ -66,7 +66,7 @@ export const ThaliBuilderPage: React.FC = () => {
       const categories = d.category.map(c => c.toLowerCase());
       const hasCategory = (name: string) => categories.includes(name.toLowerCase());
       switch (slot) {
-        case 'dal': return hasCategory('Dal & Soups') || /\\bdal\\b|curry|sambar|rasam|kadhi/.test(text);
+        case 'dal': return hasCategory('Dal & Soups') || /\bdal\b|curry|sambar|rasam|kadhi/.test(text);
         case 'sabzi': return (hasCategory('Main Course') || hasCategory('Vegetables') || hasCategory('Curries')) && !/biryani|rice|pulao|khichdi|kulcha|roti|naan|paratha|dal|soup/.test(text);
         case 'rice': return /rice|pulao|khichdi|biryani/.test(text) || hasCategory('Rice & Grains');
         case 'roti': return /roti|paratha|thepla|bhakri|kulcha|naan|phulka|chapati|dosa/.test(text) || hasCategory('Breads') || hasCategory('Rotis & Grains');
@@ -242,7 +242,7 @@ export const ThaliBuilderPage: React.FC = () => {
             
             {/* Central Platter Plate: Rotis / Rice */}
             <div className="w-[110px] h-[110px] sm:w-[150px] sm:h-[150px] rounded-full bg-white dark:bg-stone-800 border-4 border-amber-500/40 shadow-md flex flex-col items-center justify-center p-2 text-center group cursor-pointer hover:scale-105 transition-transform"
-              onClick={() => setSlotSearch(''); setActiveSlotModal('roti')}
+              onClick={() => { setSlotSearch(''); setActiveSlotModal('roti'); }}
             >
               <span className="text-xl sm:text-2xl">🫓</span>
               <p className="text-[10px] sm:text-xs font-bold text-stone-900 dark:text-stone-100 line-clamp-1">
@@ -263,7 +263,7 @@ export const ThaliBuilderPage: React.FC = () => {
               return (
                 <div
                   key={slotKey}
-                  onClick={() => setSlotSearch(''); setActiveSlotModal(slotKey)}
+                  onClick={() => { setSlotSearch(''); setActiveSlotModal(slotKey); }}
                   className="absolute w-[68px] h-[68px] sm:w-[94px] sm:h-[94px] rounded-full bg-white dark:bg-stone-800 border-2 sm:border-3 border-amber-500/50 shadow-lg flex flex-col items-center justify-center p-1 text-center cursor-pointer hover:scale-110 hover:border-[#E8620C] transition-all group overflow-hidden"
                   style={{
                     transform: `translate(${Math.cos(angle) * radiusSm}px, ${Math.sin(angle) * radiusSm}px)`
@@ -335,7 +335,7 @@ export const ThaliBuilderPage: React.FC = () => {
               return (
                 <div
                   key={slotKey}
-                  onClick={() => setSlotSearch(''); setActiveSlotModal(slotKey)}
+                  onClick={() => { setSlotSearch(''); setActiveSlotModal(slotKey); }}
                   className="flex items-center justify-between p-3 rounded-2xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700/60 hover:border-[#E8620C] cursor-pointer transition-colors"
                 >
                   <div className="flex items-center gap-3">
@@ -390,8 +390,17 @@ export const ThaliBuilderPage: React.FC = () => {
               </button>
             </div>
 
+            <div className="mb-3">
+              <input
+                value={slotSearch}
+                onChange={(e) => setSlotSearch(e.target.value)}
+                placeholder={isHindi ? 'व्यंजन, क्षेत्र या राज्य खोजें…' : 'Search dish, region or state…'}
+                className="w-full rounded-2xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 px-4 py-3 text-sm text-stone-900 dark:text-stone-100 outline-none focus:border-[#E8620C]"
+              />
+              <p className="mt-2 text-[11px] font-semibold text-stone-400">{filteredSlotDishes.length} options</p>
+            </div>
             <div className="overflow-y-auto space-y-2 flex-1 pr-1">
-              {getDishesForSlot(activeSlotModal).map((d) => (
+              {filteredSlotDishes.map((d) => (
                 <div
                   key={d.id}
                   onClick={() => handleSelectDishForSlot(d.id)}
