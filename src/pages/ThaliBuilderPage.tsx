@@ -57,35 +57,24 @@ export const ThaliBuilderPage: React.FC = () => {
     return dishId ? dishes.find(d => d.id === dishId) : undefined;
   };
 
-  // Keep the master dish list intact, but show only dishes that belong to the selected thali slot.
+  // Prefer explicit thali slot metadata so every picker stays precise; keep a safe fallback for older recipes.
   const getDishesForSlot = (slot: ThaliSlotKey): Dish[] => {
+    const explicit = dishes.filter(d => d.thaliSlots?.includes(slot));
+    if (explicit.length > 0) return explicit;
     return dishes.filter((d) => {
       const text = `${d.id} ${d.name} ${d.nameHindi}`.toLowerCase();
-      const categories = d.category.map((c) => c.toLowerCase());
+      const categories = d.category.map(c => c.toLowerCase());
       const hasCategory = (name: string) => categories.includes(name.toLowerCase());
-
       switch (slot) {
-        case 'dal':
-          return hasCategory('Dal & Soups');
-        case 'sabzi':
-          return hasCategory('Main Course') &&
-            !/biryani|rice|pulao|khichdi|kulcha|roti|naan|paratha/.test(text);
-        case 'rice':
-          return hasCategory('Rotis & Grains') &&
-            /rice|pulao|khichdi|biryani/.test(text);
-        case 'roti':
-          return hasCategory('Rotis & Grains') &&
-            /roti|paratha|thepla|bhakri|kulcha|naan/.test(text);
-        case 'salad':
-          return /raita|salad/.test(text);
-        case 'chutney':
-          return /chutney/.test(text);
-        case 'sweet':
-          return hasCategory('Healthy Desserts');
-        case 'drink':
-          return hasCategory('Drinks & Raita') && !/raita|salad/.test(text);
-        default:
-          return true;
+        case 'dal': return hasCategory('Dal & Soups') || /dal|curry|sambar|rasam/.test(text);
+        case 'sabzi': return hasCategory('Main Course') && !/biryani|rice|pulao|khichdi|kulcha|roti|naan|paratha|dal/.test(text);
+        case 'rice': return /rice|pulao|khichdi|biryani/.test(text);
+        case 'roti': return /roti|paratha|thepla|bhakri|kulcha|naan|dosa/.test(text);
+        case 'salad': return /raita|salad|kachumber/.test(text);
+        case 'chutney': return /chutney|achar|pickle/.test(text);
+        case 'sweet': return hasCategory('Healthy Desserts') || /sweet|halwa|kheer|ladoo|rasgulla/.test(text);
+        case 'drink': return hasCategory('Drinks & Raita') && !/raita|salad/.test(text);
+        default: return true;
       }
     });
   };
