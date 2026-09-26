@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppProvider, useApp } from './context/AppContext';
+import { useApp } from './context/AppContext';
 import { Navbar } from './components/Navbar';
 import { BottomNav } from './components/BottomNav';
 import { HomePage } from './pages/HomePage';
@@ -43,5 +43,5 @@ const AppContent: React.FC = () => {
 };
 
 export default function App() {
-  return <AppProvider><AppContent /></AppProvider>;
+  return <AppContent />;
 }
