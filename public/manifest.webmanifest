@@ -1,11 +1,14 @@
 {
-  "name":"Bharat Ki Thali 2.0 — A Suraj Rai Creation",
-  "short_name":"Bharat Ki Thali",
-  "description":"Explore Indian food, build custom thalis, discover recipes and cook with AI Chef.",
-  "start_url":"/",
-  "display":"standalone",
-  "background_color":"#FFFDF9",
-  "theme_color":"#D39A29",
-  "orientation":"portrait-primary",
-  "icons":[{"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "name": "Bharat Ki Thali 2.0 — A Suraj Rai Creation",
+  "short_name": "Bharat Ki Thali",
+  "description": "Explore Indian food, build custom thalis, discover recipes and cook with AI Chef.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFDF9",
+  "theme_color": "#D39A29",
+  "orientation": "portrait-primary",
+  "icons": [
+    {"src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
 }
