@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useApp } from './context/AppContext';
 import { Navbar } from './components/Navbar';
 import { BottomNav } from './components/BottomNav';
@@ -17,7 +17,41 @@ import { ApkDownloadModal } from './components/ApkDownloadModal';
 import { SurpriseMeModal } from './components/SurpriseMeModal';
 
 const AppContent: React.FC = () => {
-  const { activePage, toastMessage } = useApp();
+  const { activePage, setActivePage, toastMessage } = useApp();
+  const currentPageRef = useRef(activePage);
+
+  // Keep SPA navigation inside browser/Android history so the system Back button
+  // moves to the previous screen instead of closing the app.
+  useEffect(() => {
+    currentPageRef.current = activePage;
+  }, [activePage]);
+
+  useEffect(() => {
+    const initialPage = activePage;
+    window.history.replaceState({ bharatThaliPage: initialPage }, '', window.location.href);
+    window.history.pushState({ bharatThaliPage: initialPage }, '', window.location.href);
+
+    const handlePopState = (event: PopStateEvent) => {
+      const page = event.state?.bharatThaliPage as string | undefined;
+      if (page) {
+        setActivePage(page as any);
+        return;
+      }
+      // Never let a Back press from the app's home screen close the WebView.
+      window.history.pushState({ bharatThaliPage: currentPageRef.current }, '', window.location.href);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [setActivePage]);
+
+  useEffect(() => {
+    const page = activePage;
+    const last = window.history.state?.bharatThaliPage;
+    if (last === page) return;
+    window.history.pushState({ bharatThaliPage: page }, '', window.location.href);
+  }, [activePage]);
+
   return (
     <div className="min-h-screen bg-[#FFFDF9] dark:bg-[#1C140E] text-[#24180E] dark:text-[#FDF8F3] font-body transition-colors duration-200">
       <Navbar />
