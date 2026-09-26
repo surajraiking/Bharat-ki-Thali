@@ -54,6 +54,16 @@ export const AIChefPage: React.FC = () => {
     isHindi ? 'गैस और पाचन के लिए क्या खाएं?' : 'Digestive and gut-friendly food options'
   ];
 
+  const getOfflineChefResponse = (query: string) => {
+    const q = query.toLowerCase();
+    if (q.includes('poha') || q.includes('पोहा')) return isHindi ? '🥣 **पोहा बनाने का आसान तरीका**\\n\\nसामग्री: पोहा, प्याज, मूंगफली, हरी मिर्च, हल्दी, नमक और नींबू।\\n\\n1. पोहा धोकर 5 मिनट रखें।\\n2. तेल में मूंगफली और तड़का भूनें।\\n3. प्याज-मिर्च डालकर भूनें, फिर हल्दी और पोहा मिलाएँ।\\n4. 3–4 मिनट पकाकर नींबू डालें।\\n\\n⏱️ लगभग 15 मिनट में तैयार।' : '🥣 **Easy Poha:** Rinse poha and rest 5 minutes. Temper oil with peanuts, mustard/cumin, onion and chilli. Add turmeric and poha, cook 3–4 minutes, then finish with lemon. Ready in about 15 minutes.';
+    if (q.includes('idli') || q.includes('इडली')) return isHindi ? '🍘 **इडली:** उड़द दाल और चावल का fermented batter तैयार करें, नमक डालें और steamer में 10–12 मिनट steam करें। सांभर और नारियल चटनी के साथ परोसें।' : '🍘 **Idli:** Prepare fermented rice-urad batter, add salt and steam for 10–12 minutes. Serve with sambar and coconut chutney.';
+    if (q.includes('rajma') || q.includes('राजमा')) return isHindi ? '🍛 **राजमा मसाला:** राजमा 8 घंटे भिगोकर नरम उबालें। प्याज, टमाटर, अदरक-लहसुन और मसालों का मसाला भूनें, राजमा डालकर 15–20 मिनट धीमी आँच पर पकाएँ। चावल के साथ परोसें।' : '🍛 **Rajma Masala:** Soak rajma for about 8 hours and pressure-cook until tender. Cook onion-tomato-ginger-garlic masala, add rajma and simmer 15–20 minutes. Serve with rice.';
+    if (q.includes('breakfast') || q.includes('nashta') || q.includes('नाश्ता')) return isHindi ? '☀️ नाश्ते के विकल्प: पोहा, इडली-सांभर, मूंग दाल चिल्ला, मेथी थेपला या वेजिटेबल उपमा। आप किसी एक का नाम लिखें, मैं उसकी पूरी रेसिपी बताऊँगा।' : '☀️ Breakfast ideas: Poha, Idli-Sambar, Moong Dal Chilla, Methi Thepla or Vegetable Upma. Name one and I can give you the recipe.';
+    if (q.includes('thali') || q.includes('थाली')) return isHindi ? '🍽️ संतुलित थाली में दाल/राजमा, 2 रोटी या चावल, एक मौसमी सब्जी, सलाद, दही/रायता और थोड़ी मात्रा में मिठाई रख सकते हैं।' : '🍽️ A balanced thali can include dal/rajma, roti or rice, a seasonal vegetable, salad, curd/raita and a small dessert portion.';
+    return isHindi ? '🙏 मैं अभी offline culinary mode में हूँ। आप किसी भारतीय डिश, सामग्री, रेसिपी, cooking method या meal plan के बारे में पूछ सकते हैं। उदाहरण: “पनीर से क्या बनाऊँ?”, “राजमा कैसे बनाएं?” या “आज की थाली बनाओ।”' : '🙏 I am currently in offline culinary mode. Ask about an Indian dish, ingredient, recipe, cooking method or meal plan. For example: “What can I make with paneer?” or “How do I make rajma?”';
+  };
+
   const handleSendMessage = async (queryText?: string) => {
     const textToSend = queryText || inputMessage;
     if (!textToSend.trim() || isLoading) return;
@@ -110,9 +120,7 @@ export const AIChefPage: React.FC = () => {
       const fallbackMsg: ChatMessage = {
         id: `chef-${Date.now()}`,
         sender: 'chef',
-        text: isHindi
-          ? `माफी चाहता हूँ, सर्वर से संपर्क नहीं हो पाया। लेकिन आप हमारे होम पेज से **पोहा**, **इडली**, या **राजमा** जैसी लोकप्रिय रेसिपीज़ तुरंत देख सकते हैं!`
-          : `I am currently offline, but you can explore delicious recipes like Poha, Rajma Masala, and Idli Sambar directly from our catalog!`,
+        text: getOfflineChefResponse(textToSend),
         recommendedDishes: [],
         timestamp: Date.now()
       };
