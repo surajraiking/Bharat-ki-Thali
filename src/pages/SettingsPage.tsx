@@ -21,7 +21,7 @@ import { storageService } from '../services/storage';
 
 export const SettingsPage: React.FC = () => {
   const { settings, updateSettings, setIsApkModalOpen, showToast } = useApp();
-  const { downloadApk, isInstallable, install } = usePWA();
+  const { downloadApk, isInstallable, install, latestVersion, updateAvailable } = usePWA();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isHindi = settings.language === 'hi';
@@ -95,7 +95,7 @@ export const SettingsPage: React.FC = () => {
                   {isHindi ? 'एंड्रॉइड ऐप (Android APK Download)' : 'Android APK Download'}
                 </h3>
                 <p className="text-xs text-stone-500 dark:text-stone-400">
-                  Download Bharat-Ki-Thali-v2.0.apk directly
+                  {latestVersion ? `Latest APK • v${latestVersion}` : 'Latest Bharat Ki Thali APK'}
                 </p>
               </div>
             </div>
@@ -106,7 +106,7 @@ export const SettingsPage: React.FC = () => {
                 className="px-5 py-2.5 rounded-xl bg-[#E8620C] text-white font-bold text-xs sm:text-sm shadow-md hover:bg-orange-600 flex items-center gap-2 transition-colors"
               >
                 <Download className="w-4 h-4" />
-                <span>{isHindi ? 'APK डाउनलोड करें' : 'Download APK'}</span>
+                <span>{updateAvailable ? (isHindi ? 'अपडेट डाउनलोड करें' : 'Download Update') : (isHindi ? 'APK डाउनलोड करें' : 'Download APK')}</span>
               </button>
 
               <button
@@ -272,7 +272,7 @@ export const SettingsPage: React.FC = () => {
             Bharat Ki Thali 2.0 (भारत की थाली)
           </p>
           <p>Discover India, One Dish at a Time • Built with React, Vite & Gemini</p>
-          <p className="mt-1">Version 2.0.0 • Offline Ready PWA & Android APK</p>
+          <p className="mt-1">Version 2.0.0 • Offline Ready PWA & Android APK • Latest release auto-detected</p>
         </div>
 
       </div>
