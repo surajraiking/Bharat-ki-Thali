@@ -53,9 +53,15 @@ jobs:
           path: release/*
           if-no-files-found: error
           retention-days: 30
-      - name: Publish APK to GitHub Release
-        if: startsWith(github.ref, 'refs/tags/android-v')
+      - name: Publish latest APK to GitHub Release
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/android-v')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" release/Bharat-Ki-Thali.apk             --title "Bharat Ki Thali ${GITHUB_REF_NAME#android-v}"             --notes "Android APK release for Bharat Ki Thali. The Download APK button always points to the latest release."
+          if gh release view android-latest >/dev/null 2>&1; then
+            gh release upload android-latest release/Bharat-Ki-Thali.apk --clobber
+          else
+            gh release create android-latest release/Bharat-Ki-Thali.apk \
+              --title "Bharat Ki Thali - Latest Android APK" \
+              --notes "Latest Android APK for Bharat Ki Thali. This release is updated automatically from the main branch."
+          fi
