@@ -23,6 +23,35 @@ export interface WeeklyMealPlan { monday:MealPlanDay; tuesday:MealPlanDay; wedne
 export type ThaliSlotKey = 'dal'|'sabzi'|'rice'|'roti'|'salad'|'chutney'|'sweet'|'drink';
 export interface ThaliSelection { dal?:string; sabzi?:string; rice?:string; roti?:string; salad?:string; chutney?:string; sweet?:string; drink?:string; }
 export interface SavedThali { id:string; name:string; items:ThaliSelection; createdAt:number; }
-export interface UserPreferences { theme:'light'|'dark'|'system'; language:'hi'|'en'; dietPreference:DietType|'All'; servingsDefault:number; soundEffects:boolean; }
+export interface SocialLinks {
+  instagram?: string;
+  youtube?: string;
+  facebook?: string;
+  x?: string;
+  whatsapp?: string;
+  website?: string;
+}
+export interface UserProfile {
+  displayName: string;
+  username: string;
+  bio: string;
+  avatarUrl: string;
+  coverUrl: string;
+  location: string;
+  website: string;
+  cookingSkill: 'Beginner'|'Home Cook'|'Advanced'|'Professional';
+  favoriteCuisine: string;
+  isPublic: boolean;
+  creatorMode: boolean;
+  socialLinks: SocialLinks;
+}
+export interface UserPreferences {
+  theme:'light'|'dark'|'system';
+  language:'hi'|'en';
+  dietPreference:DietType|'All';
+  servingsDefault:number;
+  soundEffects:boolean;
+  profile: UserProfile;
+}
 export interface AIChefMessage { id:string; sender:'user'|'chef'; text:string; timestamp:number; structuredData?:{ type:'recipe_recommendation'|'ingredient_search'|'meal_plan'|'shopping_list'|'recipe_explanation'|'regional_discovery'; title?:string; recipes?:{dishId:string;name:string;reason?:string}[]; mealPlan?:Record<string,string>; shoppingItems?:{name:string;quantity:string}[]; notes?:string; }; }
 export interface StateInfo { id:string; name:string; nameHindi:string; capital:string; region:IndianRegion; cuisineDescription:string; cuisineDescriptionHindi:string; famousDishes:string[]; regionalCollections:{title:string;description:string;dishes:string[]}[]; festivalFoods:string[]; image:string; }
