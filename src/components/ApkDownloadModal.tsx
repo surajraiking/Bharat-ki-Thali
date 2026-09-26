@@ -16,7 +16,7 @@ import { usePWA } from '../hooks/usePWA';
 
 export const ApkDownloadModal: React.FC = () => {
   const { isApkModalOpen, setIsApkModalOpen, showToast, settings } = useApp();
-  const { install, isInstallable, isInstalled, downloadApk } = usePWA();
+  const { install, isInstallable, isInstalled, downloadApk, latestVersion, updateAvailable } = usePWA();
   const [downloadStarted, setDownloadStarted] = useState(false);
 
   if (!isApkModalOpen) return null;
@@ -26,7 +26,7 @@ export const ApkDownloadModal: React.FC = () => {
   const handleDownload = () => {
     downloadApk();
     setDownloadStarted(true);
-    showToast('📥 Downloading Bharat-Ki-Thali-v2.0.apk...');
+    showToast(`📥 ${latestVersion ? `Bharat Ki Thali v${latestVersion}` : 'Latest Bharat Ki Thali'} APK download started...`);
   };
 
   const handlePwaInstall = async () => {
@@ -89,7 +89,7 @@ export const ApkDownloadModal: React.FC = () => {
               Recommended for Android
             </span>
             <span className="text-xs font-semibold text-stone-500 dark:text-stone-400">
-              v2.0.0 • .apk file
+              {latestVersion ? `v${latestVersion}` : 'Latest'} • .apk file
             </span>
           </div>
 
@@ -99,12 +99,14 @@ export const ApkDownloadModal: React.FC = () => {
               : 'Directly download the Android .apk package to install the standalone application on your device.'}
           </p>
 
-          <button
-            onClick={handleDownload}
-            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#E8620C] to-[#F4B400] text-white font-bold text-sm shadow-md shadow-[#E8620C]/30 hover:opacity-95 flex items-center justify-center gap-2 transition-all"
-          >
+          {updateAvailable && (
+            <div className="mb-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800 px-3 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+              🔔 {isHindi ? `नया अपडेट उपलब्ध है — v${latestVersion}` : `New update available — v${latestVersion}`}
+            </div>
+          )}
+          <button onClick={handleDownload} className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#E8620C] to-[#F4B400] text-white font-bold text-sm shadow-md shadow-[#E8620C]/30 hover:opacity-95 flex items-center justify-center gap-2 transition-all">
             <Download className="w-4 h-4" />
-            <span>{isHindi ? 'डाउनलोड एंड्रॉइड APK (.apk)' : 'Download Android APK (.apk)'}</span>
+            <span>{updateAvailable ? (isHindi ? 'अपडेट APK डाउनलोड करें' : 'Download Update APK') : (isHindi ? 'डाउनलोड एंड्रॉइड APK (.apk)' : 'Download Android APK (.apk)')}</span>
           </button>
         </div>
 
@@ -145,7 +147,7 @@ export const ApkDownloadModal: React.FC = () => {
               <strong>Download:</strong> Tap the "Download Android APK" button above.
             </li>
             <li>
-              <strong>Open File:</strong> Pull down your notification bar or open <em>Files / Downloads</em> and tap <code>Bharat-Ki-Thali-v2.0.apk</code>.
+              <strong>Open File:</strong> Pull down your notification bar or open <em>Files / Downloads</em> and tap <code>Bharat-Ki-Thali.apk</code>.
             </li>
             <li>
               <strong>Allow & Install:</strong> If Chrome/Files asks "Install unknown apps", tap <em>Settings → Allow from this source</em>, then tap <strong>Install</strong>.
