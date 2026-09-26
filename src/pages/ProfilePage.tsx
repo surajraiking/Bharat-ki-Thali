@@ -2,6 +2,18 @@ import React, { useMemo, useState } from 'react';
 import { Camera, Check, Copy, ExternalLink, Globe, Instagram, Link2, MapPin, MessageCircle, Pencil, Share2, Sparkles, Youtube, Facebook, X, Utensils, Heart, Bookmark, Bot, ShieldCheck } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
+const openExternalLink = (rawUrl: string) => {
+  const value = rawUrl.trim();
+  if (!value) return;
+  const url = /^https?:\\/\\//i.test(value) ? value : `https://${value}`;
+  try {
+    const opened = window.open(url, '_system');
+    if (!opened) window.location.href = url;
+  } catch {
+    window.location.href = url;
+  }
+};
+
 const socialMeta = [
   { key:'instagram', label:'Instagram', icon:Instagram, placeholder:'https://instagram.com/username' },
   { key:'youtube', label:'YouTube', icon:Youtube, placeholder:'https://youtube.com/@channel' },
@@ -79,7 +91,7 @@ export const ProfilePage: React.FC = () => {
           <p className="text-sm leading-6 text-stone-600 dark:text-stone-300">{profile.bio}</p>
           <div className="flex flex-wrap gap-3 text-xs text-stone-500">
             {profile.location && <span className="flex items-center gap-1"><MapPin className="w-4 h-4"/> {profile.location}</span>}
-            {profile.website && <a href={profile.website} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[#B9770E]"><Link2 className="w-4 h-4"/> Website <ExternalLink className="w-3 h-3"/></a>}
+            {profile.website && <button type="button" onClick={()=>openExternalLink(profile.website)} className="flex items-center gap-1 text-[#B9770E]"><Link2 className="w-4 h-4"/> Website <ExternalLink className="w-3 h-3"/></button>}
             <span className="flex items-center gap-1"><Utensils className="w-4 h-4"/> {profile.favoriteCuisine}</span>
           </div>
           <div className="grid grid-cols-3 gap-2 border-y border-stone-100 dark:border-stone-800 py-4">
@@ -91,7 +103,7 @@ export const ProfilePage: React.FC = () => {
           <div>
             <div className="flex items-center justify-between mb-2"><h2 className="font-extrabold">Connected Social</h2><span className="text-xs text-stone-500">{connected.length} linked</span></div>
             <div className="grid sm:grid-cols-2 gap-2">
-              {connected.map(s=>{const M=socialMeta.find(x=>x.key===s.key)!;const Icon=M.icon;return <a key={s.key} href={profile.socialLinks[s.key]} target="_blank" rel="noreferrer" className="flex items-center gap-3 p-3 rounded-2xl border border-stone-200 dark:border-stone-700 hover:border-[#D39A29] transition-colors"><Icon className="w-5 h-5 text-[#D39A29]"/><span className="text-sm font-bold flex-1">{s.label}</span><Check className="w-4 h-4 text-emerald-600"/></a>})}
+              {connected.map(s=>{const M=socialMeta.find(x=>x.key===s.key)!;const Icon=M.icon;return <button type="button" key={s.key} onClick={()=>openExternalLink(profile.socialLinks[s.key] || '')} className="w-full flex items-center gap-3 p-3 rounded-2xl border border-stone-200 dark:border-stone-700 hover:border-[#D39A29] transition-colors text-left"><Icon className="w-5 h-5 text-[#D39A29]"/><span className="text-sm font-bold flex-1">{s.label}</span><Check className="w-4 h-4 text-emerald-600"/></button>})}
               {!connected.length && <p className="text-sm text-stone-500">Edit profile to connect your social accounts once.</p>}
             </div>
           </div>
