@@ -11,6 +11,7 @@ import { ShoppingListPage } from './pages/ShoppingListPage';
 import { AIChefPage } from './pages/AIChefPage';
 import { FavoritesPage } from './pages/FavoritesPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { ProfilePage } from './pages/ProfilePage';
 import { RecipeModal } from './components/RecipeModal';
 import { CookingModeModal } from './components/CookingModeModal';
 import { ApkDownloadModal } from './components/ApkDownloadModal';
@@ -64,6 +65,7 @@ const AppContent: React.FC = () => {
         {activePage === 'shopping-list' && <ShoppingListPage />}
         {activePage === 'ai-chef' && <AIChefPage />}
         {activePage === 'favorites' && <FavoritesPage />}
+        {activePage === 'profile' && <ProfilePage />}
         {activePage === 'settings' && <SettingsPage />}
       </main>
       <BottomNav />
