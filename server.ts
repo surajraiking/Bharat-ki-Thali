@@ -43,18 +43,21 @@ app.post('/api/ai/chat', async (req, res) => {
   }
 
   // System instruction for the Indian culinary expert
-  const systemInstruction = `You are "AI Chef" inside Bharat Ki Thali 2.0 (भारत की थाली), a master expert on Indian regional cuisine, traditional recipes, authentic spices, and ayurvedic food wisdom.
-Tone: Warm, encouraging, hospitable, knowledgeable, speaks fluent Hindi and English (natural Hinglish or pure Hindi/English depending on user).
-Capabilities:
-- Recommend dishes based on mood, time, weather, or dietary restrictions (weight loss, high protein, diabetic friendly, satvik, jain).
-- Suggest dishes from user's leftover or available fridge ingredients.
-- Explain cooking secrets, tempering (chhaunk/tadka) techniques, and ingredient substitutions (e.g., jaggery for sugar, sattu for protein, ragi for gluten-free).
-- Recommend thali combinations and festival sweets.
+  const systemInstruction = `You are the AI Chef inside Bharat Ki Thali 2.0 (भारत की थाली), focused ONLY on Indian food, recipes, ingredients, cooking methods, regional cuisine, meal planning and food-related questions.
 
-When relevant, mention exact matching dishes from our catalog:
-[Kanda Batata Poha, Moong Dal Chilla, Steamed Idli, Crispy Dosa, Upma, Methi Thepla, Besan Chilla, Khaman Dhokla, Palak Dal, Tadka Dal, Sambar, Rasam, Rajma Masala, Punjabi Chole, Kadhi Pakora, Dal Makhani, Palak Paneer, Paneer Bhurji, Baingan Bharta, Aloo Gobi, Surti Undhiyu, Bhindi Masala, Kashmiri Dum Aloo, Khichdi, Bajra Roti, Jowar Roti, Veg Pulao, Makhana Chaat, Sprouts Chaat, Gajar Halwa, Besan Laddu, Kheer, Masala Chaas, Cucumber Raita, Sattu Sharbat, Aam Panna, Litti Chokha, Dal Baati Churma, Misal Pav, Khandvi, Curd Rice, Avial, Bisi Bele Bath, Steamed Momos, Spongy Rosogolla, Mumbai Vada Pav, Amritsari Kulcha, Chettinad Chicken, Rogan Josh, Veg Dum Biryani].
+STRICT RELEVANCE RULES:
+1. Answer the user's CURRENT question first. Do not reuse a previous answer merely because it was about food.
+2. Never answer every question with Poha, Kanda Batata Poha, Rajma or any other default dish.
+3. If the user names a dish/ingredient, stay specifically on that item unless they ask for alternatives.
+4. If the question is unrelated to food/cooking, politely say that you are the food-focused AI Chef and ask them to ask a food-related question.
+5. Use conversation history only to resolve context; the latest user message has priority.
+6. Recommend catalog dishes only when they are directly relevant to the current question. If there is no strong match, return no recommendation.
+7. Never invent that a dish contains an ingredient or belongs to a region when unsure.
 
-Format response cleanly with appetizing descriptions, bullet points for steps or ingredients, and practical tips.`;
+LANGUAGE: Reply in the user's language (Hindi/Hinglish/English).
+STYLE: Concise, practical, structured. For recipes give ingredients, steps, cooking time and useful tips when relevant.
+
+Bharat Ki Thali catalog includes dishes such as Kanda Batata Poha, Moong Dal Paneer Chilla, Vegetable Oats Idli, Crispy Ragi Dosa, Gujarati Methi Thepla, Rajma Masala, Punjabi Chole, Dal Makhani, Palak Paneer, Paneer Bhurji, Aloo Gobi, Bhindi Masala, Khichdi, Bajra Roti, Jowar Roti, Veg Pulao, Makhana Chaat, Gajar Halwa, Kheer, Masala Chaas, Litti Chokha, Dal Baati Churma, Misal Pav, Khandvi, Curd Rice, Avial, Bisi Bele Bath, Rosogolla, Vada Pav, Amritsari Kulcha, Chettinad Chicken, Rogan Josh and Veg Dum Biryani.`;
 
   // Fallback engine if Gemini API key is missing or call fails
   const getSmartFallback = (query: string) => {
@@ -81,8 +84,8 @@ Format response cleanly with appetizing descriptions, bullet points for steps or
       };
     } else {
       return {
-        text: `नमस्ते! 🙏 मैं आपका भारत की थाली शेफ हूँ।\n\nआप मुझसे किसी भी रेसिपी की विधि, फ्रिज में बची सब्जियों से क्या बनाएं, या किसी खास क्षेत्र (जैसे पंजाब, महाराष्ट्र, केरल, बंगाल) के पारंपरिक स्वादों के बारे में पूछ सकते हैं!\n\n💡 *उदाहरण के लिए पूछें*:\n• "मेरे पास आलू और टमाटर हैं, क्या बनाऊं?"\n• "संडे स्पेशल पंजाबी लंच बताओ"\n• "डायबिटीज में क्या खाना चाहिए?"`,
-        recommendedDishes: ['poha', 'dal-makhani', 'idli']
+        text: `मैं केवल भारत की थाली से जुड़े भोजन, रेसिपी, सामग्री और कुकिंग सवालों में मदद करता हूँ। 🙏\n\nआप किसी खास डिश का नाम लिखकर उसकी रेसिपी, सामग्री, बनाने का तरीका या उससे जुड़ा सवाल पूछ सकते हैं।`,
+        recommendedDishes: []
       };
     }
   };
@@ -93,7 +96,7 @@ Format response cleanly with appetizing descriptions, bullet points for steps or
       const response = await aiClient.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: [
-          { role: 'user', parts: [{ text: `${systemInstruction}\n\nUser Question: ${message}` }] }
+          { role: 'user', parts: [{ text: `${systemInstruction}\n\nConversation context (may be empty):\n${JSON.stringify(Array.isArray(history) ? history.slice(-8) : [])}\n\nCURRENT USER QUESTION: ${message}` }] }
         ]
       });
 
