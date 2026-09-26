@@ -21,7 +21,17 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ dish, showAddShopping = 
       <div className="absolute inset-x-6 top-0 h-1 rounded-b-full bg-gradient-to-r from-amber-300 via-orange-500 to-rose-500 opacity-70 group-hover:opacity-100 transition-opacity" />
       <div>
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-stone-100 dark:bg-stone-800 [transform:translateZ(8px)]">
-          <img src={dish.image} alt={dish.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-[0.5deg] transition-transform duration-700" onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&auto=format&fit=crop&q=80'; }} />
+          <img src={dish.image} alt={dish.name} loading="lazy" className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-[0.5deg] transition-transform duration-700" onError={(e) => {
+            const img = e.currentTarget;
+            img.style.display = 'none';
+            const fallback = img.parentElement?.querySelector('[data-recipe-image-fallback]') as HTMLElement | null;
+            if (fallback) fallback.classList.remove('hidden');
+          }} />
+          <div data-recipe-image-fallback className="hidden absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 dark:from-stone-900 dark:via-stone-800 dark:to-stone-900 text-center p-4">
+            <span className="text-5xl mb-2">{dish.emoji || '🍛'}</span>
+            <span className="font-heading font-extrabold text-sm text-stone-800 dark:text-stone-100">{dish.name}</span>
+            <span className="text-[10px] text-stone-500 dark:text-stone-400 mt-1">Recipe image unavailable</span>
+          </div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-black/25" />
           <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
             <div className="flex items-center gap-1.5 flex-wrap">
