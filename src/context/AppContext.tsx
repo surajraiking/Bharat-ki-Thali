@@ -5,6 +5,8 @@ import { additionalDishes } from '../data/additionalDishes';
 import { globalFoodCatalog } from '../data/globalFoodCatalog';
 import { indianRegionalCatalog } from '../data/indianRegionalCatalog';
 import { storageService } from '../services/storage';
+import { supabase } from '../services/supabase';
+import type { User } from '@supabase/supabase-js';
 
 export type AppPage = 'home' | 'explore' | 'regions' | 'meal-planner' | 'thali-builder' | 'shopping-list' | 'ai-chef' | 'favorites' | 'settings';
 interface AppContextType {
@@ -22,7 +24,7 @@ const catalogDishes: Dish[] = Array.from(new Map([...allDishes, ...additionalDis
 const defaultFilters: FilterState = { searchQuery: '', mealType: 'All', diet: 'All', difficulty: 'All', maxTime: 'All', region: 'All', state: 'All', healthTag: 'All', festival: 'All', category: 'All', sortBy: 'relevance' };
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AppProvider: React.FC<{ children: React.ReactNode; user: User }> = ({ children, user }) => {
   const [activePage, setActivePage] = useState<AppPage>('home');
   const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
   const [cookingDish, setCookingDish] = useState<Dish | null>(null);
@@ -40,11 +42,59 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [savedThalis, setSavedThalis] = useState<SavedThali[]>(() => storageService.getSavedThalis());
   const [settings, setSettings] = useState<UserPreferences>(() => storageService.getSettings());
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
+  const [cloudReady, setCloudReady] = useState(false);
 
   useEffect(() => {
     const isDark = settings.theme === 'dark' || (settings.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.classList.toggle('dark', isDark);
   }, [settings.theme]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadProfile = async () => {
+      const { data, error } = await supabase.from('user_profiles').select('*').eq('user_id', user.id).maybeSingle();
+      if (cancelled) return;
+      if (error) { console.error('Profile load failed:', error); setCloudReady(true); return; }
+      if (data) {
+        if (Array.isArray(data.favorites)) setFavorites(data.favorites.filter((id: string) => catalogDishes.some(d => d.id === id)));
+        if (Array.isArray(data.recently_viewed)) setRecentlyViewed(data.recently_viewed.filter((id: string) => catalogDishes.some(d => d.id === id)));
+        if (Array.isArray(data.shopping_list)) setShoppingList(data.shopping_list as ShoppingItem[]);
+        if (data.meal_plan && typeof data.meal_plan === 'object') setMealPlanState(data.meal_plan as WeeklyMealPlan);
+        if (Array.isArray(data.saved_thalis)) setSavedThalis(data.saved_thalis as SavedThali[]);
+        if (data.settings && typeof data.settings === 'object') setSettings(prev => ({ ...prev, ...(data.settings as Partial<UserPreferences>) }));
+      } else {
+        await supabase.from('user_profiles').upsert({
+          user_id: user.id,
+          display_name: user.user_metadata?.full_name ?? null,
+          email: user.email ?? null,
+          favorites, recently_viewed: recentlyViewed, shopping_list: shoppingList,
+          meal_plan: mealPlan, saved_thalis: savedThalis, settings
+        });
+      }
+      setCloudReady(true);
+    };
+    void loadProfile();
+    return () => { cancelled = true; };
+  }, [user.id]);
+
+  useEffect(() => {
+    if (!cloudReady) return;
+    const timer = window.setTimeout(() => {
+      void supabase.from('user_profiles').upsert({
+        user_id: user.id,
+        display_name: user.user_metadata?.full_name ?? null,
+        email: user.email ?? null,
+        favorites,
+        recently_viewed: recentlyViewed,
+        shopping_list: shoppingList,
+        meal_plan: mealPlan,
+        saved_thalis: savedThalis,
+        settings,
+        updated_at: new Date().toISOString(),
+      });
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [cloudReady, user.id, favorites, recentlyViewed, shoppingList, mealPlan, savedThalis, settings]);
 
   const showToast = (msg: string) => { setToastMessage(msg); setTimeout(() => setToastMessage(prev => prev === msg ? null : prev), 3000); };
   const toggleFavorite = (dishId: string) => { const exists = favorites.includes(dishId); const next = exists ? favorites.filter(id => id !== dishId) : [...favorites, dishId]; storageService.saveFavorites(next); setFavorites(next); showToast(exists ? 'Removed from Favorites' : '❤️ Added to Favorites'); };
