@@ -1,8 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#111"/><stop offset="1" stop-color="#2a1b0f"/></linearGradient><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F8D477"/><stop offset=".5" stop-color="#D99A24"/><stop offset="1" stop-color="#8F5A12"/></linearGradient></defs>
-<rect width="512" height="512" rx="112" fill="url(#g)"/><circle cx="256" cy="230" r="150" fill="none" stroke="url(#gold)" stroke-width="18"/><circle cx="256" cy="230" r="112" fill="none" stroke="#F3C969" stroke-width="5" opacity=".65"/>
-<path d="M168 203c18-34 51-54 88-54s70 20 88 54" fill="none" stroke="url(#gold)" stroke-width="14" stroke-linecap="round"/>
-<path d="M156 235h200c-8 60-48 96-100 96s-92-36-100-96Z" fill="url(#gold)" opacity=".92"/>
-<text x="256" y="263" text-anchor="middle" font-family="Arial,sans-serif" font-size="72" font-weight="900" fill="#17100A">SR</text>
-<text x="256" y="420" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" font-weight="800" letter-spacing="5" fill="#F4D17B">SURAJ RAI</text>
+<defs>
+  <radialGradient id="bg" cx=".5" cy=".35" r=".8"><stop stop-color="#3A2412"/><stop offset=".55" stop-color="#17100B"/><stop offset="1" stop-color="#080706"/></radialGradient>
+  <linearGradient id="gold" x1=".15" y1=".05" x2=".85" y2=".95"><stop stop-color="#FFF0A6"/><stop offset=".28" stop-color="#F6C84E"/><stop offset=".62" stop-color="#D28B16"/><stop offset="1" stop-color="#8A4F08"/></linearGradient>
+  <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFF7D0"/><stop offset=".5" stop-color="#D9A52D"/><stop offset="1" stop-color="#7A4708"/></linearGradient>
+</defs>
+<rect width="512" height="512" rx="116" fill="url(#bg)"/>
+<circle cx="256" cy="256" r="190" fill="none" stroke="#D49A29" stroke-width="3" opacity=".35"/>
+<circle cx="256" cy="256" r="174" fill="none" stroke="url(#gold)" stroke-width="14"/>
+<circle cx="256" cy="256" r="151" fill="#0E0B08" stroke="#F4C64D" stroke-width="4"/>
+<!-- subtle tricolour arc -->
+<path d="M118 175 A160 160 0 0 1 394 175" fill="none" stroke="#FF8C42" stroke-width="7" stroke-linecap="round"/>
+<path d="M111 197 A160 160 0 0 1 401 197" fill="none" stroke="#F4F0D0" stroke-width="7" stroke-linecap="round" opacity=".95"/>
+<path d="M105 219 A160 160 0 0 1 407 219" fill="none" stroke="#35A853" stroke-width="7" stroke-linecap="round"/>
+<!-- thali -->
+<ellipse cx="256" cy="287" rx="126" ry="72" fill="url(#steel)" opacity=".98"/>
+<ellipse cx="256" cy="278" rx="112" ry="58" fill="#C88317" stroke="#FFE08A" stroke-width="4"/>
+<ellipse cx="256" cy="278" rx="94" ry="46" fill="#F7D77A" opacity=".9"/>
+<!-- three bowls -->
+<circle cx="205" cy="257" r="30" fill="#9B4D12" stroke="#FFE59A" stroke-width="5"/>
+<circle cx="307" cy="257" r="30" fill="#B76A12" stroke="#FFE59A" stroke-width="5"/>
+<circle cx="256" cy="304" r="32" fill="#8E4310" stroke="#FFE59A" stroke-width="5"/>
+<!-- central diya/lotus -->
+<path d="M244 210 C244 194 256 181 256 166 C256 181 270 194 268 210 C266 221 255 226 244 210Z" fill="#FFD45C"/>
+<path d="M231 226 Q256 244 281 226 Q276 254 256 261 Q236 254 231 226Z" fill="url(#gold)"/>
+<circle cx="256" cy="236" r="7" fill="#FFF3B0"/>
+<!-- serving spoon -->
+<path d="M346 318 C371 342 384 365 376 382" fill="none" stroke="#F5D16B" stroke-width="10" stroke-linecap="round"/>
+<circle cx="346" cy="318" r="15" fill="#F5D16B"/>
 </svg>
