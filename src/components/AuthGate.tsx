@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import type { Session, User } from '@supabase/supabase-js';
+import type { Session } from '@supabase/supabase-js';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '../services/supabase';
 import { AuthPage } from './AuthPage';
