@@ -18,6 +18,7 @@ import {
 import { useApp } from '../context/AppContext';
 import { usePWA } from '../hooks/usePWA';
 import { storageService } from '../services/storage';
+import { supabase } from '../services/supabase';
 
 export const SettingsPage: React.FC = () => {
   const { settings, updateSettings, setIsApkModalOpen, showToast } = useApp();
@@ -25,6 +26,7 @@ export const SettingsPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isHindi = settings.language === 'hi';
+  const userEmail = supabase.auth.getUser ? undefined : undefined;
 
   const handleExportData = () => {
     const dataStr = storageService.exportAllData();
@@ -82,6 +84,16 @@ export const SettingsPage: React.FC = () => {
       </div>
 
       <div className="space-y-6">
+        <div className="bg-white dark:bg-[#251D16] border border-[#D39A29]/30 rounded-3xl p-5 sm:p-6 shadow-xs">
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-xs font-bold text-[#D39A29] uppercase tracking-wider">{isHindi ? 'मेरा अकाउंट' : 'My Account'}</p>
+              <h3 className="font-heading font-extrabold text-lg text-stone-900 dark:text-stone-100 mt-1">{isHindi ? 'आपकी प्रोफाइल सुरक्षित है' : 'Your personal profile is secured'}</h3>
+              <p className="text-xs text-stone-500 mt-1">Signed in with {supabase.auth.getSession ? 'your account' : 'your account'}</p>
+            </div>
+            <button onClick={async () => { await supabase.auth.signOut(); }} className="px-4 py-2.5 rounded-xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-bold text-xs hover:opacity-90">Log Out</button>
+          </div>
+        </div>
         
         {/* APK & App Installation Section */}
         <div className="bg-gradient-to-br from-[#E8620C]/10 to-amber-500/10 border-2 border-[#E8620C]/40 rounded-3xl p-5 sm:p-6">
