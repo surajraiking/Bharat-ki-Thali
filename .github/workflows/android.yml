@@ -1,5 +1,9 @@
 name: Bharat Ki Thali Android
 
+concurrency:
+  group: bharat-ki-thali-android
+  cancel-in-progress: true
+
 on:
   workflow_dispatch:
   push:
@@ -70,10 +74,18 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh release view android-latest >/dev/null 2>&1; then
-            gh release upload android-latest release/Bharat-Ki-Thali.apk --clobber
-          else
+          if ! gh release view android-latest >/dev/null 2>&1; then
             gh release create android-latest release/Bharat-Ki-Thali.apk \
               --title "Bharat Ki Thali - Latest Android APK" \
               --notes "Latest Android APK for Bharat Ki Thali. This release is updated automatically from the main branch."
+          else
+            for attempt in 1 2 3; do
+              if gh release upload android-latest release/Bharat-Ki-Thali.apk --clobber; then
+                exit 0
+              fi
+              echo "APK upload attempt $attempt failed; retrying..."
+              sleep 5
+            done
+            echo "APK upload failed after 3 attempts."
+            exit 1
           fi
