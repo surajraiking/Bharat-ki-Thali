@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UtensilsCrossed, Search, MapPin, Sparkles, Heart, CircleDot, MoreHorizontal } from 'lucide-react';
+import { UtensilsCrossed, Search, MapPin, Sparkles, Heart, CircleDot, MoreHorizontal, UserRound, Bot } from 'lucide-react';
 import { useApp, AppPage } from '../context/AppContext';
 
 export const BottomNav: React.FC = () => {
@@ -19,6 +19,8 @@ export const BottomNav: React.FC = () => {
     { id: 'meal-planner' as AppPage, label: isHindi ? 'मील प्लानर' : 'Meal Planner' },
     { id: 'shopping-list' as AppPage, label: isHindi ? 'शॉपिंग' : 'Shopping List' },
     { id: 'ai-chef' as AppPage, label: isHindi ? 'AI शेफ' : 'AI Chef' },
+    { id: 'profile' as AppPage, label: isHindi ? 'प्रोफाइल' : 'Profile', icon: UserRound },
+    { id: 'ai-chef' as AppPage, label: isHindi ? 'AI चैट' : 'AI Chat', icon: Bot },
     { id: 'settings' as AppPage, label: isHindi ? 'सेटिंग्स' : 'Settings' }
   ];
 
