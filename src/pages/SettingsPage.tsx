@@ -26,7 +26,6 @@ export const SettingsPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isHindi = settings.language === 'hi';
-  const userEmail = supabase.auth.getUser ? undefined : undefined;
 
   const handleExportData = () => {
     const dataStr = storageService.exportAllData();
@@ -89,7 +88,7 @@ export const SettingsPage: React.FC = () => {
             <div>
               <p className="text-xs font-bold text-[#D39A29] uppercase tracking-wider">{isHindi ? 'मेरा अकाउंट' : 'My Account'}</p>
               <h3 className="font-heading font-extrabold text-lg text-stone-900 dark:text-stone-100 mt-1">{isHindi ? 'आपकी प्रोफाइल सुरक्षित है' : 'Your personal profile is secured'}</h3>
-              <p className="text-xs text-stone-500 mt-1">Signed in with {supabase.auth.getSession ? 'your account' : 'your account'}</p>
+              <p className="text-xs text-stone-500 mt-1">Signed in with your account</p>
             </div>
             <button onClick={async () => { await supabase.auth.signOut(); }} className="px-4 py-2.5 rounded-xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-bold text-xs hover:opacity-90">Log Out</button>
           </div>
