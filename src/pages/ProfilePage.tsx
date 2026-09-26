@@ -5,7 +5,7 @@ import { useApp } from '../context/AppContext';
 const openExternalLink = (rawUrl: string) => {
   const value = rawUrl.trim();
   if (!value) return;
-  const url = /^(https?:\\/\\/)/i.test(value) ? value : `https://${value}`;
+  const url = value.startsWith('http://') || value.startsWith('https://') ? value : `https://${value}`;
   window.location.assign(url);
 };
 
