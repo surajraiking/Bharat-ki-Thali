@@ -7,6 +7,7 @@ import { indianRegionalCatalog } from '../data/indianRegionalCatalog';
 import { storageService } from '../services/storage';
 import { supabase } from '../services/supabase';
 import type { User } from '@supabase/supabase-js';
+import { getDishImage } from '../utils/dishImage';
 
 export type AppPage = 'home' | 'explore' | 'regions' | 'meal-planner' | 'thali-builder' | 'shopping-list' | 'ai-chef' | 'favorites' | 'profile' | 'settings';
 interface AppContextType {
@@ -20,7 +21,7 @@ interface AppContextType {
 }
 
 // Keep every existing dish and append the global starter catalog. IDs are unique by design.
-const catalogDishes: Dish[] = Array.from(new Map([...allDishes, ...additionalDishes, ...globalFoodCatalog, ...indianRegionalCatalog].map(d => [d.id, d])).values());
+const catalogDishes: Dish[] = Array.from(new Map([...allDishes, ...additionalDishes, ...globalFoodCatalog, ...indianRegionalCatalog].map(d => [d.id, d])).values()).map(d => ({ ...d, image: getDishImage(d) }));
 const defaultFilters: FilterState = { searchQuery: '', mealType: 'All', diet: 'All', difficulty: 'All', maxTime: 'All', region: 'All', state: 'All', healthTag: 'All', festival: 'All', category: 'All', sortBy: 'relevance' };
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
