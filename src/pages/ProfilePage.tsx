@@ -5,13 +5,8 @@ import { useApp } from '../context/AppContext';
 const openExternalLink = (rawUrl: string) => {
   const value = rawUrl.trim();
   if (!value) return;
-  const url = /^https?:\\/\\//i.test(value) ? value : `https://${value}`;
-  try {
-    const opened = window.open(url, '_system');
-    if (!opened) window.location.href = url;
-  } catch {
-    window.location.href = url;
-  }
+  const url = /^(https?:\\/\\/)/i.test(value) ? value : `https://${value}`;
+  window.location.assign(url);
 };
 
 const socialMeta = [
