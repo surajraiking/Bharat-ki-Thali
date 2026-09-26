@@ -73,7 +73,10 @@ export const AIChefPage: React.FC = () => {
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: textToSend.trim() })
+        body: JSON.stringify({
+          message: textToSend.trim(),
+          history: [...messages, userMsg].slice(-8).map(m => ({ role: m.sender === 'user' ? 'user' : 'assistant', text: m.text }))
+        })
       });
 
       if (!response.ok) {
@@ -83,7 +86,7 @@ export const AIChefPage: React.FC = () => {
       const data = await response.json();
 
       // Find any mentioned dishes from our catalog
-      const detectedDishIds: string[] = data.recommendedDishes || [];
+      const detectedDishIds: string[] = Array.isArray(data.recommendedDishes) ? data.recommendedDishes : [];
       if (detectedDishIds.length === 0) {
         dishes.forEach(d => {
           if (data.text.toLowerCase().includes(d.name.toLowerCase())) {
@@ -110,7 +113,7 @@ export const AIChefPage: React.FC = () => {
         text: isHindi
           ? `माफी चाहता हूँ, सर्वर से संपर्क नहीं हो पाया। लेकिन आप हमारे होम पेज से **पोहा**, **इडली**, या **राजमा** जैसी लोकप्रिय रेसिपीज़ तुरंत देख सकते हैं!`
           : `I am currently offline, but you can explore delicious recipes like Poha, Rajma Masala, and Idli Sambar directly from our catalog!`,
-        recommendedDishes: ['poha', 'rajma', 'idli'],
+        recommendedDishes: [],
         timestamp: Date.now()
       };
       setMessages(prev => [...prev, fallbackMsg]);
