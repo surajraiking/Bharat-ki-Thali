@@ -26,12 +26,24 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - name: Install SVG rasterizer
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y librsvg2-bin
+      - name: Generate app icons from master SVG
+        run: |
+          mkdir -p resources
+          rsvg-convert -w 1024 -h 1024 public/icon.svg -o resources/icon.png
+          rsvg-convert -w 512 -h 512 public/icon.svg -o public/icon-512.png
+          rsvg-convert -w 192 -h 192 public/icon.svg -o public/icon-192.png
       - name: Install dependencies
         run: npm install
       - name: Build web app
         run: npm run build
       - name: Add Android platform
         run: npx cap add android
+      - name: Generate native Android launcher icons
+        run: npx @capacitor/assets generate --android
       - name: Sync Capacitor
         run: npx cap sync android
       - name: Build debug APK and release APK/AAB
