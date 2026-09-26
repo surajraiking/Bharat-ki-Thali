@@ -21,7 +21,21 @@ const DEFAULT_SETTINGS: UserPreferences = {
   language: 'hi',
   dietPreference: 'All',
   servingsDefault: 2,
-  soundEffects: true
+  soundEffects: true,
+  profile: {
+    displayName: 'Bharat Ki Thali User',
+    username: 'foodlover',
+    bio: 'Exploring India, one delicious dish at a time 🇮🇳',
+    avatarUrl: '',
+    coverUrl: '',
+    location: '',
+    website: '',
+    cookingSkill: 'Home Cook',
+    favoriteCuisine: 'Indian',
+    isPublic: true,
+    creatorMode: false,
+    socialLinks: {}
+  }
 };
 
 const DEFAULT_MEAL_PLAN: WeeklyMealPlan = {
