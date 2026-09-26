@@ -1,13 +1,7 @@
-import React, { useMemo, useState } from 'react';
-import { Camera, Check, Copy, ExternalLink, Globe, Instagram, Link2, MapPin, MessageCircle, Pencil, Share2, Sparkles, Youtube, Facebook, X, Utensils, Heart, Bookmark, Bot, ShieldCheck } from 'lucide-react';
+import React, { useMemo, useRef, useState } from 'react';
+import { Camera, Check, Copy, ExternalLink, Globe, Instagram, Link2, MapPin, MessageCircle, Pencil, Share2, Sparkles, Youtube, Facebook, X, Utensils, Heart, Bookmark, Bot, ShieldCheck, Trash2, ImagePlus } from 'lucide-react';
+import { openExternalLink } from '../utils/externalLink';
 import { useApp } from '../context/AppContext';
-
-const openExternalLink = (rawUrl: string) => {
-  const value = rawUrl.trim();
-  if (!value) return;
-  const url = value.startsWith('http://') || value.startsWith('https://') ? value : `https://${value}`;
-  window.location.assign(url);
-};
 
 const socialMeta = [
   { key:'instagram', label:'Instagram', icon:Instagram, placeholder:'https://instagram.com/username' },
@@ -22,7 +16,40 @@ export const ProfilePage: React.FC = () => {
   const { profile, updateProfile, settings, favorites, savedThalis, recentlyViewed, setActivePage, showToast } = useApp();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(profile);
+  const [uploading, setUploading] = useState<'avatar' | 'cover' | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
   const isHindi = settings.language === 'hi';
+
+  const resizeImageFile = (file: File, maxWidth: number, maxHeight: number, quality = 0.84) => new Promise<string>((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      const scale = Math.min(1, maxWidth / image.naturalWidth, maxHeight / image.naturalHeight);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+      canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { URL.revokeObjectURL(objectUrl); reject(new Error('Canvas unavailable')); return; }
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+      const data = canvas.toDataURL('image/jpeg', quality);
+      URL.revokeObjectURL(objectUrl);
+      resolve(data);
+    };
+    image.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error('Invalid image')); };
+    image.src = objectUrl;
+  });
+
+  const handleImageUpload = async (file: File | undefined, kind: 'avatar' | 'cover') => {
+    if (!file || !file.type.startsWith('image/')) { showToast(isHindi ? 'कृपया image file चुनें' : 'Please choose an image file'); return; }
+    setUploading(kind);
+    try {
+      const data = await resizeImageFile(file, kind === 'avatar' ? 900 : 1600, kind === 'avatar' ? 900 : 900);
+      setDraft(prev => ({ ...prev, [kind === 'avatar' ? 'avatarUrl' : 'coverUrl']: data }));
+      showToast(isHindi ? 'फोटो तैयार है — Save Profile दबाएं' : 'Photo ready — tap Save Profile');
+    } catch { showToast(isHindi ? 'फोटो तैयार नहीं हो सकी' : 'Could not prepare the photo'); }
+    finally { setUploading(null); }
+  };
 
   React.useEffect(() => setDraft(profile), [profile]);
 
@@ -57,8 +84,10 @@ export const ProfilePage: React.FC = () => {
   return <div className="max-w-4xl mx-auto px-3 sm:px-6 py-5 sm:py-8">
     <div className="relative overflow-hidden rounded-3xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#24180E] shadow-xl">
       <div className="h-32 sm:h-44 bg-gradient-to-br from-[#D39A29] via-orange-500 to-[#7C2D12] relative">
-        {profile.coverUrl && <img src={profile.coverUrl} className="w-full h-full object-cover" alt="" />}
+        {profile.coverUrl && <img src={profile.coverUrl} className="w-full h-full object-cover" alt="Profile cover" />}
         <div className="absolute inset-0 bg-black/15"/>
+        {editing && <button type="button" onClick={()=>coverInputRef.current?.click()} className="absolute left-3 bottom-3 inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-black/45 text-white backdrop-blur font-bold text-xs"><ImagePlus className="w-4 h-4"/>{uploading === 'cover' ? 'Uploading…' : 'Change Cover'}</button>}
+        <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={e=>void handleImageUpload(e.target.files?.[0], 'cover')} />
         <button onClick={share} className="absolute top-3 right-3 p-2.5 rounded-full bg-black/25 text-white backdrop-blur"><Share2 className="w-4 h-4"/></button>
       </div>
       <div className="px-4 sm:px-7 pb-6">
@@ -67,7 +96,8 @@ export const ProfilePage: React.FC = () => {
             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white dark:border-[#24180E] bg-gradient-to-br from-amber-200 to-orange-500 overflow-hidden flex items-center justify-center text-3xl font-black text-white">
               {profile.avatarUrl ? <img src={profile.avatarUrl} alt={profile.displayName} className="w-full h-full object-cover"/> : profile.displayName.slice(0,1).toUpperCase()}
             </div>
-            {editing && <div className="absolute bottom-1 right-1 bg-[#D39A29] text-white p-2 rounded-full"><Camera className="w-4 h-4"/></div>}
+            {editing && <button type="button" onClick={()=>avatarInputRef.current?.click()} className="absolute bottom-1 right-1 bg-[#D39A29] text-white p-2 rounded-full shadow-lg" title="Change profile photo"><Camera className="w-4 h-4"/></button>}
+            <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={e=>void handleImageUpload(e.target.files?.[0], 'avatar')} />
           </div>
           <div className="flex-1 min-w-0 pb-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -117,8 +147,10 @@ export const ProfilePage: React.FC = () => {
             <label className="block"><span className="text-xs font-bold text-stone-500">Cooking skill</span><select value={draft.cookingSkill} onChange={e=>setDraft({...draft,cookingSkill:e.target.value as any})} className="mt-1 w-full rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 px-3 py-2.5 text-sm"><option>Beginner</option><option>Home Cook</option><option>Advanced</option><option>Professional</option></select></label>
             {field('Favorite cuisine','', 'favoriteCuisine','Indian')}
           </div>
-          {field('Profile photo URL','', 'avatarUrl','https://...')}
-          {field('Cover photo URL','', 'coverUrl','https://...')}
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div className="rounded-2xl border border-stone-200 dark:border-stone-700 p-3"><div className="flex items-center justify-between gap-2 mb-2"><span className="text-xs font-bold text-stone-500">Profile photo</span><button type="button" onClick={()=>avatarInputRef.current?.click()} className="text-xs font-bold text-[#B9770E] flex items-center gap-1"><ImagePlus className="w-3.5 h-3.5"/> Choose</button></div><div className="flex items-center gap-3"><div className="w-14 h-14 rounded-full overflow-hidden bg-stone-100 dark:bg-stone-800 flex items-center justify-center">{draft.avatarUrl ? <img src={draft.avatarUrl} alt="Profile preview" className="w-full h-full object-cover"/> : <Camera className="w-5 h-5 text-stone-400"/>}</div><button type="button" onClick={()=>setDraft({...draft,avatarUrl:''})} className="text-xs text-red-600 flex items-center gap-1"><Trash2 className="w-3.5 h-3.5"/> Remove</button></div></div>
+            <div className="rounded-2xl border border-stone-200 dark:border-stone-700 p-3"><div className="flex items-center justify-between gap-2 mb-2"><span className="text-xs font-bold text-stone-500">Cover photo</span><button type="button" onClick={()=>coverInputRef.current?.click()} className="text-xs font-bold text-[#B9770E] flex items-center gap-1"><ImagePlus className="w-3.5 h-3.5"/> Choose</button></div><div className="h-14 rounded-xl overflow-hidden bg-stone-100 dark:bg-stone-800">{draft.coverUrl && <img src={draft.coverUrl} alt="Cover preview" className="w-full h-full object-cover"/>}</div><button type="button" onClick={()=>setDraft({...draft,coverUrl:''})} className="mt-2 text-xs text-red-600 flex items-center gap-1"><Trash2 className="w-3.5 h-3.5"/> Remove</button></div>
+          </div>
           <label className="flex items-center gap-3 p-3 rounded-xl bg-stone-50 dark:bg-stone-900"><input type="checkbox" checked={draft.isPublic} onChange={e=>setDraft({...draft,isPublic:e.target.checked})}/><span><b>Public profile</b><small className="block text-xs text-stone-500">Allow your profile to be shared by link.</small></span></label>
           <label className="flex items-center gap-3 p-3 rounded-xl bg-stone-50 dark:bg-stone-900"><input type="checkbox" checked={draft.creatorMode} onChange={e=>setDraft({...draft,creatorMode:e.target.checked})}/><span><b>Creator mode</b><small className="block text-xs text-stone-500">Show creator badge on your profile.</small></span></label>
           <div className="border-t border-stone-200 dark:border-stone-800 pt-4">
@@ -133,4 +165,14 @@ export const ProfilePage: React.FC = () => {
       </div>
     </div>
   </div>;
+};
+
+
+export const CreatorSocialFooter: React.FC = () => {
+  const links = [
+    { label: 'Instagram', url: 'https://instagram.com/surajraiking', icon: Instagram },
+    { label: 'YouTube', url: 'https://youtube.com/@SanatanMythologyTales', icon: Youtube },
+    { label: 'Facebook', url: 'https://facebook.com/surajraiking21', icon: Facebook },
+  ];
+  return <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-5 pt-2"><div className="rounded-3xl border border-[#D39A29]/25 bg-gradient-to-r from-[#17100B] via-[#24180E] to-[#3A2412] text-white p-4 sm:p-5 shadow-lg"><div className="flex flex-col sm:flex-row items-center justify-between gap-4"><div className="flex items-center gap-3 min-w-0"><img src="/icon.svg" alt="Bharat Ki Thali logo" className="w-12 h-12 rounded-2xl shrink-0"/><div className="min-w-0"><div className="font-extrabold text-base sm:text-lg">Bharat Ki Thali</div><div className="text-xs text-white/70">A Suraj Rai Creation • Follow Suraj Rai</div></div></div><div className="flex flex-wrap justify-center gap-2">{links.map(({label,url,icon:Icon})=><button key={label} type="button" onClick={()=>void openExternalLink(url)} className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 text-xs font-bold"><Icon className="w-4 h-4"/>{label}<ExternalLink className="w-3 h-3 opacity-70"/></button>)}</div></div></div></section>;
 };

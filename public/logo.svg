@@ -1,14 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 220">
-<defs>
-  <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFE79A"/><stop offset=".45" stop-color="#D39A29"/><stop offset="1" stop-color="#8A520D"/></linearGradient>
-</defs>
-<rect x="10" y="10" width="200" height="200" rx="52" fill="#17100B"/>
-<circle cx="110" cy="110" r="78" fill="none" stroke="url(#gold)" stroke-width="8"/>
-<ellipse cx="110" cy="128" rx="56" ry="31" fill="url(#gold)"/>
-<ellipse cx="110" cy="123" rx="45" ry="23" fill="#F6D77B"/>
-<circle cx="88" cy="114" r="12" fill="#A95C12"/><circle cx="132" cy="114" r="12" fill="#A95C12"/><circle cx="110" cy="139" r="13" fill="#91460D"/>
-<path d="M103 94 C103 83 110 76 110 67 C110 76 118 83 117 94 C116 101 109 104 103 94Z" fill="#FFD45C"/>
-<text x="250" y="91" font-family="Arial,sans-serif" font-size="54" font-weight="900" fill="#C98718">BHARAT KI THALI</text>
-<text x="252" y="139" font-family="Arial,sans-serif" font-size="29" font-weight="700" letter-spacing="3" fill="#2A1B10">भारत का स्वाद • एक ही थाली</text>
-<text x="252" y="181" font-family="Arial,sans-serif" font-size="20" font-weight="700" letter-spacing="5" fill="#9A6A22">A SURAJ RAI CREATION</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 240"><defs><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFE79A"/><stop offset=".45" stop-color="#D39A29"/><stop offset="1" stop-color="#8A520D"/></linearGradient></defs><rect width="1100" height="240" rx="34" fill="#FFFDF9"/><rect x="18" y="18" width="204" height="204" rx="58" fill="#17100B"/><circle cx="120" cy="120" r="82" fill="none" stroke="url(#gold)" stroke-width="9"/><ellipse cx="120" cy="138" rx="61" ry="34" fill="url(#gold)"/><ellipse cx="120" cy="132" rx="49" ry="24" fill="#F6D77B"/><circle cx="96" cy="122" r="13" fill="#A95C12"/><circle cx="144" cy="122" r="13" fill="#A95C12"/><circle cx="120" cy="151" r="14" fill="#91460D"/><path d="M112 101 C112 89 120 81 120 69 C120 81 129 89 128 101 C127 109 119 112 112 101Z" fill="#FFD45C"/><text x="255" y="100" font-family="Arial,sans-serif" font-size="58" font-weight="900" fill="#B97810">BHARAT KI THALI</text><text x="257" y="150" font-family="Arial,sans-serif" font-size="31" font-weight="800" fill="#2A1B10">भारत का स्वाद • एक ही थाली</text><text x="258" y="193" font-family="Arial,sans-serif" font-size="21" font-weight="800" letter-spacing="5" fill="#9A6A22">A SURAJ RAI CREATION</text></svg>

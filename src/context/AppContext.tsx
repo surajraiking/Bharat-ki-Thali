@@ -53,7 +53,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode; user: User }> = 
     favoriteCuisine: 'Indian',
     isPublic: true,
     creatorMode: false,
-    socialLinks: {}
+    socialLinks: {
+      instagram: 'https://instagram.com/surajraiking',
+      youtube: 'https://youtube.com/@SanatanMythologyTales',
+      facebook: 'https://facebook.com/surajraiking21',
+    }
   };
   const profile = { ...defaultProfile, ...(settings.profile ?? {}), socialLinks: { ...defaultProfile.socialLinks, ...(settings.profile?.socialLinks ?? {}) } } as UserProfile;
 

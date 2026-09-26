@@ -16,6 +16,7 @@ import { RecipeModal } from './components/RecipeModal';
 import { CookingModeModal } from './components/CookingModeModal';
 import { ApkDownloadModal } from './components/ApkDownloadModal';
 import { SurpriseMeModal } from './components/SurpriseMeModal';
+import { CreatorSocialFooter } from './pages/ProfilePage';
 
 const AppContent: React.FC = () => {
   const { activePage, setActivePage, toastMessage } = useApp();
@@ -68,6 +69,7 @@ const AppContent: React.FC = () => {
         {activePage === 'profile' && <ProfilePage />}
         {activePage === 'settings' && <SettingsPage />}
       </main>
+      <CreatorSocialFooter />
       <BottomNav />
       <RecipeModal />
       <CookingModeModal />
